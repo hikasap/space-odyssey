@@ -29,7 +29,7 @@ export function setupInteraction(renderer, camera, scene, celestialBodies) {
     function detectRaycast() {
         if (mouseMoved) {
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(scene.children);
+            const intersects = raycaster.intersectObjects(celestialBodies.map(body => body.mesh));
 
             if (intersects.length > 0) {
                 if (INTERSECTED != intersects[0].object) {
