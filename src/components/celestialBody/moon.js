@@ -2,7 +2,7 @@ import { CelestialBody } from './celestialBody.js';
 
 export class Moon extends CelestialBody {
     constructor(size, color, semiMajorAxis, eccentricity, orbitalPeriod, parentPlanet) {
-        super(size, color, 'sphere');
+        super(size, color, 'sphere', '../../../assets/textures/moon_texture.png');
         this.semiMajorAxis = semiMajorAxis;
         this.eccentricity = eccentricity;
         this.orbitalPeriod = orbitalPeriod;
