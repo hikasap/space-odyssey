@@ -7,13 +7,13 @@ import { setupInteraction } from './components/systems/interaction.js';
 import { Planet } from './components/celestialBody/planet.js';
 import { Moon } from './components/celestialBody/moon.js';
 import * as THREE from 'three';
+import { Spacecraft } from './components/spacecraft.js';
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 0, 100);
-camera.setInitialPosition(camera.position);
 camera.setOrbitControls(renderer.domElement);
 
 scene.add(ambientLight);
@@ -43,6 +43,15 @@ for (const x of x_range) {
     }
 }
 
+const spacecraft = new Spacecraft(scene,  () => {
+    camera.setFollowTarget(spacecraft.getMesh());
+});
+
+
+// console.log(spacecraft);
+// console.log(spacecraft.getMesh());
+// camera.controls.target = spacecraft
+
 const detectRaycast = setupInteraction(renderer, camera, scene, celestialBodies);
 
 function animate() {
@@ -57,8 +66,9 @@ function animate() {
         }
     });
 
+    spacecraft.update(deltaTime);
     camera.update();
-
+    
     detectRaycast();
 
     renderer.render(scene, camera);
