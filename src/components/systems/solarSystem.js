@@ -13,8 +13,10 @@ export function generateSolarSystem(scene, celestialBodies) {
     for (let i = 0; i < numPlanets; i++) {
         const planetSize = Math.random() * 2 + 1;
         const planetColor = Math.random() * 0xffffff;
-        const planet = new Planet(planetSize, planetColor);
-        planet.mesh.position.set(Math.random() * 50 - 25, Math.random() * 50 - 25, Math.random() * 50 - 25);
+        const semiMajorAxis = Math.random() * 50 + 20;
+        const eccentricity = Math.random() * 0.2;
+        const orbitalPeriod = Math.random() * 50 + 20;
+        const planet = new Planet(planetSize, planetColor, semiMajorAxis, eccentricity, orbitalPeriod);
         scene.add(planet.mesh);
         celestialBodies.push(planet);
 
@@ -22,8 +24,10 @@ export function generateSolarSystem(scene, celestialBodies) {
         for (let j = 0; j < numMoons; j++) {
             const moonSize = Math.random() * 0.5 + 0.1;
             const moonColor = Math.random() * 0xffffff;
-            const moon = new Moon(moonSize, moonColor);
-            moon.mesh.position.set(planet.mesh.position.x + Math.random() * 5, planet.mesh.position.y + Math.random() * 5, planet.mesh.position.z + Math.random() * 5);
+            const moonSemiMajorAxis = planetSize + moonSize + Math.random();
+            const moonEccentricity = Math.random() * 0.2;
+            const moonOrbitalPeriod = Math.random() * 10 + 5;
+            const moon = new Moon(moonSize, moonColor, moonSemiMajorAxis, moonEccentricity, moonOrbitalPeriod, planet);
             scene.add(moon.mesh);
             celestialBodies.push(moon);
         }
