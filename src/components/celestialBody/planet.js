@@ -1,12 +1,14 @@
 import { CelestialBody } from './celestialBody.js';
 
 export class Planet extends CelestialBody {
-    constructor(size, color, semiMajorAxis, eccentricity, orbitalPeriod) {
+    constructor(size, color, semiMajorAxis, eccentricity, orbitalPeriod, parentStar) {
         super(size, color, 'sphere');
         this.semiMajorAxis = semiMajorAxis;
         this.eccentricity = eccentricity;
         this.orbitalPeriod = orbitalPeriod;
-        this.orbitalAngle = Math.random() * Math.PI * 2; // Random initial angle
+        this.orbitalAngle = Math.random() * Math.PI * 2; 
+        this.inclination = Math.random() * Math.PI * 2; 
+        this.parentStar = parentStar;
     }
 
     updateOrbit(deltaTime) {
@@ -19,7 +21,12 @@ export class Planet extends CelestialBody {
 
         const x = a * Math.cos(this.orbitalAngle);
         const y = b * Math.sin(this.orbitalAngle);
+        const z = y * Math.sin(this.inclination);
 
-        this.mesh.position.set(x, 0, y);
+        this.mesh.position.set(
+            this.parentStar.mesh.position.x + x,
+            this.parentStar.mesh.position.y + y * Math.cos(this.inclination),
+            this.parentStar.mesh.position.z + z
+        );
     }
 }
