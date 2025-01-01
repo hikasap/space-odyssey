@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
 class Camera extends THREE.PerspectiveCamera {
     constructor(fov, aspect, near, far) {
@@ -6,8 +7,9 @@ class Camera extends THREE.PerspectiveCamera {
 
         this.initialPosition = new THREE.Vector3();
         this.focusedObject = null;
-
         this.lerpSpeed = 0.05;
+        this.controls = null;
+        this.userInteracting = false;
     }
 
     setInitialPosition(position) {
@@ -17,13 +19,52 @@ class Camera extends THREE.PerspectiveCamera {
 
     focusOnObject(object) {
         this.focusedObject = object;
+        this.controls.target.copy(object.position);
     }
 
     resetFocus() {
+        this.focusedObject = 0;
+        this.controls.target.set(0, 0, 0);
+    }
+
+    setOrbitControls(domElement) {
+        this.controls = new OrbitControls(this, domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.25;
+        this.controls.enableZoom = true;
+
+        this.controls.addEventListener('start', () => {
+            this.userInteracting = true;
+            this.handleControlStart();
+        });
+
+        this.controls.addEventListener('end', () => {
+            this.userInteracting = false;
+            this.handleControlEnd();
+        });
+
+    }
+
+
+    handleControlStart() {
         this.focusedObject = null;
+        console.log('Control started');
+    }
+
+    handleControlEnd() {
+        console.log('Control ended');
     }
 
     update() {
+
+        if (this.controls && !this.focusOnObject) {
+            this.controls.update();
+        }
+        
+        if (this.userInteracting) {
+            return;
+        }
+
         if (this.focusedObject) {
             const geometry = this.focusedObject.geometry;
             console.log(geometry);
@@ -47,7 +88,7 @@ class Camera extends THREE.PerspectiveCamera {
                 this.position.lerp(targetPosition, this.lerpSpeed);
                 this.lookAt(this.focusedObject.position);
             }
-        } else {
+        }else if (this.focusedObject == 0) {
             this.position.lerp(this.initialPosition, this.lerpSpeed);
             this.lookAt(new THREE.Vector3(0, 0, 0));
         }
