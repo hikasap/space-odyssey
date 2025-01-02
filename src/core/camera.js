@@ -40,8 +40,8 @@ class Camera extends THREE.PerspectiveCamera {
         });
 
         this.controls.addEventListener('end', () => {
-            this.userInteracting = false;
             this.handleControlEnd();
+            this.userInteracting = false;
         });
 
     }
@@ -50,6 +50,7 @@ class Camera extends THREE.PerspectiveCamera {
         this.focusedObject = null;
         console.log('Control started');
     }
+
 
     handleControlEnd() {
         console.log('Control ended');

@@ -8,6 +8,7 @@ import { Planet } from './components/celestialBody/planet.js';
 import { Moon } from './components/celestialBody/moon.js';
 import * as THREE from 'three';
 import { Spacecraft } from './components/spacecraft.js';
+import PhysicsInstance from './core/physics.js';
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -42,36 +43,40 @@ for (const x of x_range) {
         }
     }
 }
+Promise.all([
+    PhysicsInstance.init(),
+]).then(() => {
 
-const spacecraft = new Spacecraft(scene,  () => {
-    camera.setFollowTarget(spacecraft.getMesh());
-});
-
-
-// console.log(spacecraft);
-// console.log(spacecraft.getMesh());
-// camera.controls.target = spacecraft
-
-const detectRaycast = setupInteraction(renderer, camera, scene, celestialBodies);
-
-function animate() {
-    requestAnimationFrame(animate);
-
-    const deltaTime = 0.01;
-
-    celestialBodies.forEach(body => {
-        body.rotate();
-        if (body instanceof Planet || body instanceof Moon) {
-            body.updateOrbit(deltaTime);
-        }
+    const spaceCraftPosition = new THREE.Vector3(0, 0, 50);
+    const spacecraft = new Spacecraft(spaceCraftPosition , scene,  () => {
+        camera.setFollowTarget(spacecraft.getMesh());
     });
 
-    spacecraft.update(deltaTime);
-    camera.update();
-    
-    detectRaycast();
+    const detectRaycast = setupInteraction(renderer, camera, scene, celestialBodies);
 
-    renderer.render(scene, camera);
-}
+    function animate() {
+        requestAnimationFrame(animate);
 
-animate();
+        const deltaTime = 1.0/60.0;
+
+        celestialBodies.forEach(body => {
+            body.rotate();
+            if (body instanceof Planet || body instanceof Moon) {
+                body.updateOrbit(deltaTime);
+            }
+        });
+        
+        PhysicsInstance.update(deltaTime);
+        spacecraft.update(deltaTime);
+        
+        camera.update();
+        detectRaycast();
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+}).catch((error) => {
+    console.error('Failed to initialize physics', error);
+});

@@ -1,9 +1,14 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import PhysicsInstance from '../core/physics';
+import { BatchedRenderer, Bezier, CircleEmitter, ColorOverLife, ColorRange, ConeEmitter, ConstantColor, ConstantValue, FrameOverLife, IntervalValue, ParticleSystem, PiecewiseBezier, PointEmitter, RenderMode, SizeOverLife, SpeedOverLife } from 'three.quarks';
+import { thickness } from 'three/tsl';
+
 
 export class Spacecraft {
-    constructor(scene, onModelLoaded) {
+    constructor(position, scene, onModelLoaded) {
         this.scene = scene;
+        this.position = position || new THREE.Vector3(0, 0, 0);
         this.model = null;
         this.loader = new GLTFLoader();
         this.velocity = new THREE.Vector3();
@@ -11,32 +16,44 @@ export class Spacecraft {
         this.keys = {};
         this.onModelLoaded = onModelLoaded;
         this.init();
+
+        this.batchSystem = null;
+        this.enginePositions = [
+            { position: new THREE.Vector3(-1.5, 0.6, -3), group: 'topLeft' },
+            { position: new THREE.Vector3(1.5, 0.6, -3), group: 'topRight' },
+            { position: new THREE.Vector3(-1.5, -0.6, -3), group: 'bottomLeft' },
+            { position: new THREE.Vector3(1.5, -0.6, -3), group: 'bottomRight' },
+            { position: new THREE.Vector3(0, 0, -2.5), group: 'central' }
+        ];
+        this.particleSystems = {};
     }
 
     init() {
         this.loadModel();
-        this.setupInput();
+        this.setupInput();    
     }
 
     loadModel() {
         this.loader.load(
             'assets/models/spacecraft.glb',
             (gltf) => {
-                // console.log('Spacecraft model loaded:', gltf);
                 this.model = gltf.scene;
                 this.model.scale.set(0.02, 0.02, 0.02);
-                // rotate the model so it faces the camera
                 this.model.rotation.y = Math.PI;
+                this.model.position.copy(this.position);
                 this.scene.add(this.model);
-                // console.log('Spacecraft model added to scene:', this.model);
-
                 this.addWireframe();
+                this.initParticleSystems();
 
+                console.log(this.model);
                 if (this.onModelLoaded) {
                     this.onModelLoaded();
                     console.log("on model loaded");
                 }
-                    
+                PhysicsInstance.addRigidBody(this.model, 1);
+                const body = this.model.userData.physicsBody;
+                body.setActivationState(4);
+                
             },
             undefined,
             (error) => {
@@ -74,41 +91,216 @@ export class Spacecraft {
         });
     }
 
+    applyForce(force) {
+        if (this.model && this.model.userData.physicsBody) {
+            const btForce = new PhysicsInstance.AmmoLib.btVector3(force.x, force.y, force.z);
+            this.model.userData.physicsBody.applyForce(btForce, new PhysicsInstance.AmmoLib.btVector3(0, 0, 0));
+            PhysicsInstance.AmmoLib.destroy(btForce);
+        }
+    }
+
+    applyTorque(torque) {
+        if (this.model && this.model.userData.physicsBody) {
+            const btTorque = new PhysicsInstance.AmmoLib.btVector3(torque.x, torque.y, torque.z);
+            this.model.userData.physicsBody.applyTorque(btTorque);
+            PhysicsInstance.AmmoLib.destroy(btTorque);
+        }
+    }
+
+    initParticleSystems() {
+        this.batchSystem = new BatchedRenderer();
+        this.enginePositions.forEach(engine => {
+            const {position, group} = engine;
+
+            const mainEngine = group === 'central';
+            const texture = new THREE.TextureLoader().load("assets/textures/a_albedo.png");
+            console.log(texture);
+            const engineFlame = {
+                duration: 1,
+                looping: true,
+                startLife: new IntervalValue(0.1, 1),
+                startSpeed: mainEngine ? new ConstantValue(-1.75) : new ConstantValue(-1.25),
+                startSize: mainEngine ? new IntervalValue(0.5, 1) : new IntervalValue(0.25, 0.4),
+                startColor: new ConstantColor(new THREE.Vector4(0.8, 0.8, 1, 1)),
+                worldSpace: false,
+                maxParticle: 500,
+                shape: new ConeEmitter({
+                    radius: 0.01,
+                    angle : Math.PI / 20,
+                    thickness: 0.5,
+                    direction: new THREE.Vector3(0, 0, 1),
+                    spread: 0,
+                }),
+                // Simple material without texture
+                geometry: new THREE.SphereGeometry(0.1, 32, 32),
+                material : new THREE.MeshBasicMaterial({ 
+                    color: 0xffffff, 
+                    map: texture, 
+                    transparent: true,
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.DoubleSide,
+                }),
+                // renderMode: RenderMode.Trail,
+            };
+
+            const engineFlameSystem = new ParticleSystem(engineFlame);
+            engineFlameSystem.addBehavior(new ColorOverLife(new ColorRange(
+                new THREE.Vector4(1, 1, 1, 1),
+                new THREE.Vector4(1, 1, 1, 0)
+            )));
+            
+            engineFlameSystem.emitter.name = 'engineFlame';
+            engineFlameSystem.emitter.position.copy(position);
+            
+            // engineFlameSystem.set
+
+            this.particleSystems[group] = engineFlameSystem;
+            this.batchSystem.addSystem(this.particleSystems[group]);
+            this.model.add(this.particleSystems[group].emitter);
+        });
+        this.scene.add(this.batchSystem);
+    }
+
     update(deltaTime) {
         if (!this.model) return;
     
-        let TRANSLATION_SPEED = 1;
-        if (this.keys['shift']) {
-            TRANSLATION_SPEED *= 3;
-        }
-        const ROTATION_SPEED = 1;
+        const mainEngineForce = 100 * deltaTime;
+        const sideEngineForce = 2.5 * deltaTime;
+        const rotationalFactor = 0.1;
+        const backwardEngineForce = 0.5 * deltaTime;
 
-        this.velocity.set(0, 0, 0);
-    
+        let force = 4 * sideEngineForce;
+        if (this.keys['shift']) {
+            force = mainEngineForce + 4 * sideEngineForce;
+        }
+        console.log(force);
 
         if (this.keys['w'] || this.keys['arrowup']) {
-            this.velocity.z += TRANSLATION_SPEED * deltaTime;
+            const forwardVector = this.getForwardVector();
+            const forceVector = forwardVector.clone().multiplyScalar(-force);
+            this.applyForce(forceVector);
         }
         if (this.keys['s'] || this.keys['arrowdown']) {
-            this.velocity.z -= TRANSLATION_SPEED * deltaTime;
+            const forwardVector = this.getForwardVector();
+            const forceVector = forwardVector.clone().multiplyScalar(backwardEngineForce);
+            this.applyForce(forceVector);
         }
+        
+        // Apply Torques Based on Local Axes
         if (this.keys['a'] || this.keys['arrowleft']) {
-            this.model.rotateY(ROTATION_SPEED * deltaTime);
+            // Yaw left (rotate around local Up axis)
+            const upVector = this.getUpVector();
+            const torque = upVector.clone().multiplyScalar(sideEngineForce * rotationalFactor);
+            this.applyTorque(torque);
         }
         if (this.keys['d'] || this.keys['arrowright']) {
-            this.model.rotateY(-ROTATION_SPEED * deltaTime);
+            // Yaw right (rotate around local Up axis)
+            const upVector = this.getUpVector();
+            const torque = upVector.clone().multiplyScalar(-sideEngineForce * rotationalFactor);
+            this.applyTorque(torque);
         }
         if (this.keys['q']) {
-            this.model.rotateX(ROTATION_SPEED * deltaTime);
+            // Pitch nose up (rotate around local Right axis)
+            const rightVector = this.getRightVector();
+            const torque = rightVector.clone().multiplyScalar(sideEngineForce * rotationalFactor);
+            this.applyTorque(torque);
         }
         if (this.keys['e']) {
-            this.model.rotateX(-ROTATION_SPEED * deltaTime);
+            // Pitch nose down (rotate around local Right axis)
+            const rightVector = this.getRightVector();
+            const torque = rightVector.clone().multiplyScalar(-sideEngineForce * rotationalFactor);
+            this.applyTorque(torque);
         }
     
-    
-        this.model.translateX(this.velocity.x);
-        this.model.translateY(this.velocity.y);
-        this.model.translateZ(this.velocity.z);
+        this.handleParticleActivation();
+
+        // Update batch renderer
+        this.batchSystem.update(deltaTime);
+    }
+
+    handleParticleActivation() {
+        let engineAvailable = [0, 0, 0, 0, 0];
+
+        if (this.keys['w'] || this.keys['arrowup']) {
+            engineAvailable[0] = 1;
+            engineAvailable[1] = 1;
+            engineAvailable[2] = 1;
+            engineAvailable[3] = 1;
+            if (this.keys['shift']) {
+                engineAvailable[4] = 1;
+            }
+        }
+        if (this.keys['a'] || this.keys['arrowleft']) {
+            engineAvailable[0] = 1;
+            engineAvailable[2] = 1;
+        }
+        if (this.keys['d'] || this.keys['arrowright']) {
+            engineAvailable[1] = 1;
+            engineAvailable[3] = 1;
+        }
+        if (this.keys['q']) {
+            engineAvailable[0] = 1;
+            engineAvailable[1] = 1;
+        }
+        if (this.keys['e']) {
+            engineAvailable[2] = 1;
+            engineAvailable[3] = 1;
+        }
+
+        // close engines and open engines
+        this.enginePositions.forEach((engine, index) => {
+            const { group } = engine;
+            if (engineAvailable[index]) {
+                this.setParticleEmission(true, [group]);
+            } else {
+                this.setParticleEmission(false, [group]);
+            }
+        });
+    }
+
+    // Method to activate or deactivate particle emission for specific groups
+    setParticleEmission(active, groups) {
+        groups.forEach(group => {
+            // Get it from the particle systems object
+            const system = this.particleSystems[group];
+            if (system) {
+                if (!active) {
+                    system.stop();
+                }
+                else {
+                    system.play();
+                }
+            }
+        });
+    }
+
+    /**
+     * Returns the forward vector based on the current orientation.
+     */
+    getForwardVector() {
+        const forward = new THREE.Vector3(0, 0, -1); // Assuming -Z is forward
+        forward.applyQuaternion(this.model.quaternion);
+        forward.normalize();
+        return forward;
+    }
+    /**
+     * Returns the right vector based on the current orientation.
+     */
+    getRightVector() {
+        const right = new THREE.Vector3(1, 0, 0); // Assuming +X is right
+        right.applyQuaternion(this.model.quaternion);
+        right.normalize();
+        return right;
+    }
+
+    /**
+     * Returns the up vector based on the current orientation.
+     */
+    getUpVector() {
+        const up = new THREE.Vector3(0, 1, 0); // Assuming +Y is up
+        up.applyQuaternion(this.model.quaternion);
+        up.normalize();
+        return up;
     }
 
     getMesh() {
