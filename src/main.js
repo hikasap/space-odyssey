@@ -13,7 +13,7 @@ import PhysicsInstance from './core/physics.js';
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
 camera.position.set(0, 0, 100);
 camera.setOrbitControls(renderer.domElement);
 
@@ -68,7 +68,7 @@ Promise.all([
         
         PhysicsInstance.update(deltaTime);
         spacecraft.update(deltaTime);
-        
+
         camera.update();
         detectRaycast();
 
