@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import PhysicsInstance from '../core/physics';
-import { BatchedRenderer, Bezier, CircleEmitter, ColorOverLife, ColorRange, ConeEmitter, ConstantColor, ConstantValue, FrameOverLife, IntervalValue, ParticleSystem, PiecewiseBezier, PointEmitter, RenderMode, SizeOverLife, SpeedOverLife } from 'three.quarks';
-import { thickness } from 'three/tsl';
-
+import { BatchedRenderer, ColorOverLife, ColorRange, ConeEmitter, ConstantColor, ConstantValue, IntervalValue, ParticleSystem} from 'three.quarks';
 
 export class Spacecraft {
     constructor(position, scene, onModelLoaded) {
