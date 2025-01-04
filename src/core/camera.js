@@ -5,26 +5,33 @@ class Camera extends THREE.PerspectiveCamera {
     constructor(fov, aspect, near, far) {
         super(fov, aspect, near, far);
 
-        this.initialPosition = new THREE.Vector3();
+        this.followTarget = null;
         this.focusedObject = null;
-        this.lerpSpeed = 0.05;
+        this.orbitalTarget = null;
+        this.lerpSpeed = 0.06;
         this.controls = null;
         this.userInteracting = false;
     }
 
-    setInitialPosition(position) {
-        this.initialPosition.copy(position);
-        this.position.copy(position);
+    // Camera orbits around the object
+    setOrbitalTarget(object) {
+        this.orbitalTarget = object;
+    }
+
+    setFollowTarget(object) {
+        this.focusedObject = 0;
+        this.followTarget = object;
+        this.setOrbitalTarget(object);
     }
 
     focusOnObject(object) {
         this.focusedObject = object;
-        this.controls.target.copy(object.position);
+        this.setOrbitalTarget(object);
     }
 
     resetFocus() {
         this.focusedObject = 0;
-        this.controls.target.set(0, 0, 0);
+        this.setOrbitalTarget(this.followTarget);
     }
 
     setOrbitControls(domElement) {
@@ -39,25 +46,23 @@ class Camera extends THREE.PerspectiveCamera {
         });
 
         this.controls.addEventListener('end', () => {
-            this.userInteracting = false;
             this.handleControlEnd();
+            this.userInteracting = false;
         });
 
     }
 
-
     handleControlStart() {
         this.focusedObject = null;
-        console.log('Control started');
     }
 
     handleControlEnd() {
-        console.log('Control ended');
+        // camera state log
     }
 
     update() {
-
-        if (this.controls && !this.focusOnObject) {
+        if (this.controls) {
+            this.controls.target.copy(this.orbitalTarget.position);
             this.controls.update();
         }
         
@@ -67,7 +72,7 @@ class Camera extends THREE.PerspectiveCamera {
 
         if (this.focusedObject) {
             const geometry = this.focusedObject.geometry;
-            console.log(geometry);
+
             if (geometry) {
 
                 if (!geometry.boundingSphere) {
@@ -75,10 +80,8 @@ class Camera extends THREE.PerspectiveCamera {
                 }
 
                 const radius = geometry.boundingSphere?.radius || 1;
-                console.log(radius);
 
                 const offsetDist = radius * 2;
-                console.log(offsetDist);
                 const targetOffset = new THREE.Vector3(offsetDist, offsetDist, offsetDist);
 
                 const targetPosition = new THREE.Vector3()
@@ -88,9 +91,17 @@ class Camera extends THREE.PerspectiveCamera {
                 this.position.lerp(targetPosition, this.lerpSpeed);
                 this.lookAt(this.focusedObject.position);
             }
+
         }else if (this.focusedObject == 0) {
-            this.position.lerp(this.initialPosition, this.lerpSpeed);
-            this.lookAt(new THREE.Vector3(0, 0, 0));
+            const offset = new THREE.Vector3(0, 0.1, -0.2);
+            offset.applyQuaternion(this.followTarget.quaternion);
+
+            const targetPosition = new THREE.Vector3()
+                .copy(this.followTarget.position)
+                .add(offset);
+
+            this.position.lerp(targetPosition, this.lerpSpeed);
+            this.lookAt(this.followTarget.position);
         }
     }
 }
