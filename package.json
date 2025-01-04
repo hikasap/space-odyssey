@@ -1,4 +1,12 @@
 {
+  "name": "space-odyssey",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  }
+  ,
   "dependencies": {
     "ammojs3": "^0.0.11",
     "gsap": "^3.12.5",
