@@ -48,17 +48,14 @@ class Camera extends THREE.PerspectiveCamera {
 
     handleControlStart() {
         this.focusedObject = null;
-        console.log('Control started');
     }
 
-
     handleControlEnd() {
-        console.log('Control ended');
+        // camera state log
     }
 
     update() {
-
-        if (this.controls && !this.focusOnObject) {
+        if (this.controls && !this.focusedObject && this.focusedObject !== 0) {
             this.controls.update();
         }
         
@@ -67,7 +64,7 @@ class Camera extends THREE.PerspectiveCamera {
         }
 
         if (this.focusedObject) {
-            console.log(this.focusedObject);
+            this.controls.target = this.focusedObject.position;
             const geometry = this.focusedObject.geometry;
 
             if (geometry) {
@@ -77,10 +74,8 @@ class Camera extends THREE.PerspectiveCamera {
                 }
 
                 const radius = geometry.boundingSphere?.radius || 1;
-                console.log(radius);
 
                 const offsetDist = radius * 2;
-                console.log(offsetDist);
                 const targetOffset = new THREE.Vector3(offsetDist, offsetDist, offsetDist);
 
                 const targetPosition = new THREE.Vector3()
@@ -92,6 +87,7 @@ class Camera extends THREE.PerspectiveCamera {
             }
 
         }else if (this.focusedObject == 0) {
+            this.controls.target = this.followTarget.position;
             const offset = new THREE.Vector3(0, 0.1, -0.2);
             offset.applyQuaternion(this.followTarget.quaternion);
 
