@@ -39,7 +39,6 @@ for (const x of x_range) {
         for (const z of z_range) {
             const chunkOffset = new THREE.Vector3(x * chunkSize, y * chunkSize, z * chunkSize);
             generateSolarSystem(scene, celestialBodies, chunkOffset);
-            console.log("Generated solar system at", chunkOffset);
         }
     }
 }

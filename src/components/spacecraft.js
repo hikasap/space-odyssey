@@ -45,10 +45,8 @@ export class Spacecraft {
                 this.addWireframe();
                 this.initParticleSystems();
 
-                console.log(this.model);
                 if (this.onModelLoaded) {
                     this.onModelLoaded();
-                    console.log("on model loaded");
                 }
                 PhysicsInstance.addRigidBody(this.model, 1);
                 const body = this.model.userData.physicsBody;
@@ -114,7 +112,6 @@ export class Spacecraft {
 
             const mainEngine = group === 'central';
             const texture = new THREE.TextureLoader().load("assets/textures/a_albedo.png");
-            console.log(texture);
             const engineFlame = {
                 duration: 1,
                 looping: true,
@@ -173,7 +170,6 @@ export class Spacecraft {
         if (this.keys['shift']) {
             force = mainEngineForce + 4 * sideEngineForce;
         }
-        console.log(force);
 
         if (this.keys['w'] || this.keys['arrowup']) {
             const forwardVector = this.getForwardVector();
