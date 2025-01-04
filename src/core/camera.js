@@ -7,25 +7,31 @@ class Camera extends THREE.PerspectiveCamera {
 
         this.followTarget = null;
         this.focusedObject = null;
+        this.orbitalTarget = null;
         this.lerpSpeed = 0.06;
         this.controls = null;
         this.userInteracting = false;
     }
 
+    // Camera orbits around the object
+    setOrbitalTarget(object) {
+        this.orbitalTarget = object;
+    }
+
     setFollowTarget(object) {
         this.focusedObject = 0;
         this.followTarget = object;
-        this.controls.target.copy(object.position);
+        this.setOrbitalTarget(object);
     }
 
     focusOnObject(object) {
         this.focusedObject = object;
-        this.controls.target.copy(object.position);
+        this.setOrbitalTarget(object);
     }
 
     resetFocus() {
         this.focusedObject = 0;
-        this.controls.target.copy(this.followTarget.position);
+        this.setOrbitalTarget(this.followTarget);
     }
 
     setOrbitControls(domElement) {
@@ -55,7 +61,8 @@ class Camera extends THREE.PerspectiveCamera {
     }
 
     update() {
-        if (this.controls && !this.focusedObject && this.focusedObject !== 0) {
+        if (this.controls) {
+            this.controls.target.copy(this.orbitalTarget.position);
             this.controls.update();
         }
         
@@ -64,7 +71,6 @@ class Camera extends THREE.PerspectiveCamera {
         }
 
         if (this.focusedObject) {
-            this.controls.target = this.focusedObject.position;
             const geometry = this.focusedObject.geometry;
 
             if (geometry) {
@@ -87,7 +93,6 @@ class Camera extends THREE.PerspectiveCamera {
             }
 
         }else if (this.focusedObject == 0) {
-            this.controls.target = this.followTarget.position;
             const offset = new THREE.Vector3(0, 0.1, -0.2);
             offset.applyQuaternion(this.followTarget.quaternion);
 
