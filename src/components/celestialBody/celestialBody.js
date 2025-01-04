@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export class CelestialBody {
-    constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = '../../../assets/textures/a_albedo.png') {
+    constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = 'assets/textures/a_albedo.png') {
         this.size = size;
         this.color = color;
         this.type = type;
