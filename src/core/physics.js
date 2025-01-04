@@ -110,8 +110,6 @@ class Physics {
 
                 objThree.position.set(p.x(), p.y(), p.z());
                 objThree.quaternion.set(q.x(), q.y(), q.z(), q.w());
-
-                console.log(objThree.position);
             }
         }
     }
