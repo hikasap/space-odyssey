@@ -7,13 +7,14 @@ import { setupInteraction } from './components/systems/interaction.js';
 import { Planet } from './components/celestialBody/planet.js';
 import { Moon } from './components/celestialBody/moon.js';
 import * as THREE from 'three';
+import { Spacecraft } from './components/spacecraft.js';
+import PhysicsInstance from './core/physics.js';
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
 camera.position.set(0, 0, 100);
-camera.setInitialPosition(camera.position);
 camera.setOrbitControls(renderer.domElement);
 
 scene.add(ambientLight);
@@ -38,30 +39,43 @@ for (const x of x_range) {
         for (const z of z_range) {
             const chunkOffset = new THREE.Vector3(x * chunkSize, y * chunkSize, z * chunkSize);
             generateSolarSystem(scene, celestialBodies, chunkOffset);
-            console.log("Generated solar system at", chunkOffset);
         }
     }
 }
+Promise.all([
+    PhysicsInstance.init(),
+]).then(() => {
 
-const detectRaycast = setupInteraction(renderer, camera, scene, celestialBodies);
-
-function animate() {
-    requestAnimationFrame(animate);
-
-    const deltaTime = 0.01;
-
-    celestialBodies.forEach(body => {
-        body.rotate();
-        if (body instanceof Planet || body instanceof Moon) {
-            body.updateOrbit(deltaTime);
-        }
+    const spaceCraftPosition = new THREE.Vector3(0, 0, 50);
+    const spacecraft = new Spacecraft(spaceCraftPosition , scene,  () => {
+        camera.setFollowTarget(spacecraft.getMesh());
     });
 
-    camera.update();
+    const detectRaycast = setupInteraction(renderer, camera, scene, celestialBodies);
 
-    detectRaycast();
+    function animate() {
+        requestAnimationFrame(animate);
 
-    renderer.render(scene, camera);
-}
+        const deltaTime = 1.0/60.0;
 
-animate();
+        celestialBodies.forEach(body => {
+            body.rotate();
+            if (body instanceof Planet || body instanceof Moon) {
+                body.updateOrbit(deltaTime);
+            }
+        });
+        
+        PhysicsInstance.update(deltaTime);
+        spacecraft.update(deltaTime);
+
+        camera.update();
+        detectRaycast();
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+}).catch((error) => {
+    console.error('Failed to initialize physics', error);
+});
