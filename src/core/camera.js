@@ -62,7 +62,7 @@ class Camera extends THREE.PerspectiveCamera {
 
     update() {
         if (this.controls) {
-            this.controls.target.copy(this.orbitalTarget.position);
+            if (this.orbitalTarget) this.controls.target.copy(this.orbitalTarget.position);
             this.controls.update();
         }
         
