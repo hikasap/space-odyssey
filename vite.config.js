@@ -1,7 +1,9 @@
-import { defineConfig } from 'vite';
-import path from 'path';
+import { defineConfig } from 'vite'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+import path from 'path'
 
 export default defineConfig({
+  plugins: [svelte()],
   base: '/space-odyssey/',
   resolve: {
     alias: {
@@ -15,4 +17,4 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
-});
+})
