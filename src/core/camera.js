@@ -13,7 +13,7 @@ class Camera extends THREE.PerspectiveCamera {
         this.userInteracting = false;
     }
 
-    // Camera orbits around the object
+    
     setOrbitalTarget(object) {
         this.orbitalTarget = object;
     }
