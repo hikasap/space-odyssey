@@ -14,7 +14,6 @@ import PhysicsInstance from '../core/physics.js';
 export function initScene(container){
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-    container.appendChild(renderer.domElement);
     document.body.appendChild(renderer.domElement);
 
     const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
@@ -22,6 +21,7 @@ export function initScene(container){
     camera.setOrbitControls(renderer.domElement);
 
     scene.add(ambientLight);
+    container.appendChild(renderer.domElement);
 
     const celestialBodies = [];
     const chunkSize = 256;
@@ -60,7 +60,7 @@ export function initScene(container){
             });
             
             detectRaycast();
-            
+
             PhysicsInstance.update(deltaTime);
             spacecraft.update(deltaTime);
             camera.update();
