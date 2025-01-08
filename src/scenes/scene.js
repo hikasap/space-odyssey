@@ -29,17 +29,17 @@ export function displayScene(container){
 }
 
 export function initScene(){
+    const chunkSize = 512;
 
     scene = new THREE.Scene();
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 2048);
+    const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 8 * chunkSize);
     camera.setOrbitControls(renderer.domElement);
 
     scene.add(ambientLight);
 
     const celestialBodies = [];
-    const chunkSize = 512;
     const x_range = [0];
     const y_range = [0];
     const z_range = [0];
@@ -70,11 +70,9 @@ export function initScene(){
     }
     // Create starfield
     const starGeometry = new THREE.BufferGeometry();
-    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+    const starMaterial = new THREE.PointsMaterial({ color: 0xaaaaaa });
     const starVertices = [];
     for (let i = 0; i < 10000; i++) {
-        // x should be outside the solar system
-        // ranges from [-ChunkSize, -2*ChunkSize] and [*ChunkSize, 2*ChunkSize]
         const point = getSphericalRandomDot(2 * chunkSize);
         starVertices.push(point.x, point.y, point.z);
     }
