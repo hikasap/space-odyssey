@@ -5,8 +5,8 @@ export class CelestialBody {
         this.size = size;
         this.color = color;
         this.type = type;
-        this.rotationSpeedX = (Math.random() - 0.5) * 0.02;
-        this.rotationSpeedY = (Math.random() - 0.5) * 0.02;
+        this.rotationSpeedX = (Math.random() - 0.5) * 0.2;
+        this.rotationSpeedY = (Math.random() - 0.5) * 0.2;
 
         const textureLoader = new THREE.TextureLoader();
         const texture = textureLoader.load(texturePath);
@@ -23,8 +23,8 @@ export class CelestialBody {
         this.mesh = new THREE.Mesh(geometry, this.material);
     }
 
-    rotate() {
-        this.mesh.rotation.y += this.rotationSpeedX;
-        this.mesh.rotation.x += this.rotationSpeedY;
+    rotate(deltaTime) {
+        this.mesh.rotation.y += this.rotationSpeedX * deltaTime;
+        this.mesh.rotation.x += this.rotationSpeedY * deltaTime;
     }
 }
