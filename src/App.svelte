@@ -1,12 +1,19 @@
 <script>
   import { onMount } from 'svelte';
-  import { initScene } from './scenes/scene.js';
+  import { displayScene, setSpeedMultiplier } from './scenes/scene.js';
 
   let container;
+  let speedMultiplier = 1;
 
   onMount(() => {
-    initScene(container);
+    const scene = displayScene(container);
   });
+
+  function handleSpeedChange(event) {
+    speedMultiplier = parseFloat(event.target.value);
+    setSpeedMultiplier(speedMultiplier);
+  }
+
 </script>
 
 <!-- Information Icon -->
@@ -22,7 +29,23 @@
     <li><strong>Shift + Click:</strong> Change Focus</li>
     <li><strong>R:</strong> Reset Focus</li>
   </ul>
+  
 </div>
+
+
+<div class="speed-slider" style="position: fixed; top: 20px; right: 20px; z-index:2000;">
+  <label style="color: #ffffff;"for="speed-input">Game Speed: {speedMultiplier}x</label>
+  <input
+    id="speed-input"
+    type="range"
+    min="0.25"
+    max="10"
+    step="0.25"
+    bind:value={speedMultiplier}
+    on:input={handleSpeedChange}
+  />
+</div>
+
 
 <!-- Three.js Scene Container -->
 <div bind:this={container} style="width: 100%; height: 100vh;"></div>
