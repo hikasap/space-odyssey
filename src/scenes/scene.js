@@ -12,8 +12,12 @@ import PhysicsInstance from '../core/physics.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
+import { getRandomNumber } from '../utils/random.js';
 
+let celestialBodies = [];
 let speedMultiplier = 1.0;
+const chunkSize = 512;
+
 
 export function setSpeedMultiplier(value) {
     speedMultiplier = value;
@@ -28,18 +32,18 @@ export function displayScene(container){
     container.appendChild(renderer.domElement);
 }
 
-export function initScene(){
-    const chunkSize = 512;
+export function regenerateSolarSystem(){
+    // Clear all
+    for (const celestialBody of celestialBodies) {
+        scene.remove(celestialBody.mesh);
+    }
 
-    scene = new THREE.Scene();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    celestialBodies = [];
+    addSolarSystem();
+}
 
-    const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 8 * chunkSize);
-    camera.setOrbitControls(renderer.domElement);
+export function addSolarSystem(){
 
-    scene.add(ambientLight);
-
-    const celestialBodies = [];
     const x_range = [0];
     const y_range = [0];
     const z_range = [0];
@@ -51,12 +55,14 @@ export function initScene(){
             }
         }
     }
+}
 
+export function addBackground(){
 
     function getSphericalRandomDot(radius)
     {
-        const u = Math.random();
-        const v = Math.random();
+        const u = getRandomNumber();
+        const v = getRandomNumber();
     
         const phi = 2 * Math.PI * u;
         const theta = Math.acos(2 * v - 1);
@@ -79,6 +85,21 @@ export function initScene(){
     starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
+
+}
+
+export function initScene(){
+
+    scene = new THREE.Scene();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 8 * chunkSize);
+    camera.setOrbitControls(renderer.domElement);
+
+    scene.add(ambientLight);
+
+    addSolarSystem();
+    addBackground();
 
     // Add motion blur effect
     const composer = new EffectComposer(renderer);

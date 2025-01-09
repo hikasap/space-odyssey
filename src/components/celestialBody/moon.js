@@ -1,3 +1,4 @@
+import { getRandomNumber } from '../../utils/random.js';
 import { CelestialBody } from './celestialBody.js';
 
 export class Moon extends CelestialBody {
@@ -6,8 +7,8 @@ export class Moon extends CelestialBody {
         this.semiMajorAxis = semiMajorAxis;
         this.eccentricity = eccentricity;
         this.orbitalPeriod = orbitalPeriod;
-        this.orbitalAngle = Math.random() * Math.PI * 2;
-        this.inclination = Math.random() * Math.PI * 2; 
+        this.orbitalAngle = getRandomNumber() * Math.PI * 2;
+        this.inclination = getRandomNumber() * Math.PI * 2; 
         this.parentPlanet = parentPlanet; 
     }
 

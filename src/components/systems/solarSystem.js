@@ -3,8 +3,10 @@ import { Planet } from '../celestialBody/planet.js';
 import { Moon } from '../celestialBody/moon.js';
 import { Asteroid } from '../celestialBody/asteroid.js';
 import * as THREE from 'three';
+import { getRandomNumber } from '../../utils/random.js';
 
 export function generateSolarSystem(scene, celestialBodies, chunkOffset = new THREE.Vector3(0, 0, 0), chunkSize = 512) {
+ 
     const CHUNK_SIZE = chunkSize;
     const HALF_SIZE = CHUNK_SIZE / 2;
 
@@ -14,20 +16,20 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
     chunkLine.position.copy(chunkOffset);
     scene.add(chunkLine);
 
-    const starSize = Math.random() * 5 + 10;
-    const starColor = 0xffff00 + Math.random() * 0x0000cc;
+    const starSize = getRandomNumber() * 5 + 10;
+    const starColor = 0xffff00 + getRandomNumber() * 0x0000cc;
     const star = new Star(starSize, starColor);
     star.mesh.position.add(chunkOffset);
     scene.add(star.mesh);
     celestialBodies.push(star);
 
-    const numPlanets = Math.floor(Math.random() * 5) + 3;
+    const numPlanets = Math.floor(getRandomNumber() * 5) + 3;
     for (let i = 0; i < numPlanets; i++) {
-        const planetSize = Math.random() * 5 + 2;
-        const planetColor = Math.random() * 0xffffff;
+        const planetSize = getRandomNumber() * 5 + 2;
+        const planetColor = getRandomNumber() * 0xffffff;
         const maxSemiMajorAxis = HALF_SIZE - planetSize - starSize * 2;
-        const semiMajorAxis = planetSize + starSize * 2 +  Math.random() * maxSemiMajorAxis;
-        const eccentricity = Math.random() * 0.4;
+        const semiMajorAxis = planetSize + starSize * 2 +  getRandomNumber() * maxSemiMajorAxis;
+        const eccentricity = getRandomNumber() * 0.4;
 
         // Use a simplified Kepler-like law for orbital period:
         // T ~ sqrt(a^3), adjusting with a multiplier to control final speed scale
@@ -39,29 +41,29 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
         scene.add(planet.mesh);
         celestialBodies.push(planet);
 
-        const numMoons = Math.floor(Math.random() * 3);
+        const numMoons = Math.floor(getRandomNumber() * 3);
         for (let j = 0; j < numMoons; j++) {
-            const moonSize = Math.random() * 0.8 + 0.2;
-            const moonColor = Math.random() * 0xffffff;
-            const moonSemiMajorAxis = planetSize + moonSize + Math.random() * 2;
-            const moonEccentricity = Math.random() * 0.2;
-            const moonOrbitalPeriod = (orbitalPeriod / 2) + Math.random() * (orbitalPeriod / 2);
+            const moonSize = getRandomNumber() * 0.8 + 0.2;
+            const moonColor = getRandomNumber() * 0xffffff;
+            const moonSemiMajorAxis = planetSize + moonSize + getRandomNumber() * 2;
+            const moonEccentricity = getRandomNumber() * 0.2;
+            const moonOrbitalPeriod = (orbitalPeriod / 2) + getRandomNumber() * (orbitalPeriod / 2);
             const moon = new Moon(moonSize, moonColor, moonSemiMajorAxis, moonEccentricity, moonOrbitalPeriod, planet);
             scene.add(moon.mesh);
             celestialBodies.push(moon);
         }
     }
 
-    const numAsteroids = Math.floor(Math.random() * 50) + 50;
+    const numAsteroids = Math.floor(getRandomNumber() * 50) + 50;
     for (let k = 0; k < numAsteroids; k++) {
-        const asteroidSize = Math.random() * 0.2 + 0.25;
-        const asteroidColor = Math.random() * 0xffffff;
+        const asteroidSize = getRandomNumber() * 0.2 + 0.25;
+        const asteroidColor = getRandomNumber() * 0xffffff;
         const asteroid = new Asteroid(asteroidSize, asteroidColor);
 
         const asteroidPos = new THREE.Vector3(
-            Math.random() * CHUNK_SIZE - HALF_SIZE,
-            Math.random() * CHUNK_SIZE - HALF_SIZE,
-            Math.random() * CHUNK_SIZE - HALF_SIZE
+            getRandomNumber() * CHUNK_SIZE - HALF_SIZE,
+            getRandomNumber() * CHUNK_SIZE - HALF_SIZE,
+            getRandomNumber() * CHUNK_SIZE - HALF_SIZE
         );
         asteroid.mesh.position.copy(asteroidPos).add(chunkOffset);
 

@@ -1,13 +1,21 @@
 <script>
   import { onMount } from 'svelte';
-  import { displayScene, setSpeedMultiplier } from './scenes/scene.js';
+  import { displayScene, setSpeedMultiplier, regenerateSolarSystem } from './scenes/scene.js';
+  import { setSeed } from './utils/random.js';
 
   let container;
   let speedMultiplier = 1;
+  let seed = 0;
 
   onMount(() => {
     const scene = displayScene(container);
   });
+
+  function handleSeedChange(event) {
+    seed = event.target.value;
+    setSeed(seed.toString());
+    regenerateSolarSystem();
+  }
 
   function handleSpeedChange(event) {
     speedMultiplier = parseFloat(event.target.value);
@@ -39,13 +47,25 @@
     id="speed-input"
     type="range"
     min="0.25"
-    max="10"
+    max="5"
     step="0.25"
     bind:value={speedMultiplier}
     on:input={handleSpeedChange}
   />
 </div>
 
+<div class="seed-slider" style="position: fixed; top: 60px; right: 20px; z-index:2000;">
+  <label style="color: #ffffff;" for="seed-input">Solar System Seed: {seed}</label>
+  <input
+    id="seed-input"
+    type="range"
+    min="0"
+    max="1000"
+    step="1"
+    bind:value={seed}
+    on:input={handleSeedChange}
+  />
+</div>
 
 <!-- Three.js Scene Container -->
 <div bind:this={container} style="width: 100%; height: 100vh;"></div>

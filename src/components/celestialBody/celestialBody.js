@@ -1,12 +1,13 @@
 import * as THREE from 'three';
+import { getRandomNumber } from '../../utils/random';
 
 export class CelestialBody {
     constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = 'assets/textures/a_albedo.png') {
         this.size = size;
         this.color = color;
         this.type = type;
-        this.rotationSpeedX = (Math.random() - 0.5) * 0.2;
-        this.rotationSpeedY = (Math.random() - 0.5) * 0.2;
+        this.rotationSpeedX = (getRandomNumber() - 0.5) * 0.2;
+        this.rotationSpeedY = (getRandomNumber() - 0.5) * 0.2;
 
         const textureLoader = new THREE.TextureLoader();
         const texture = textureLoader.load(texturePath);
