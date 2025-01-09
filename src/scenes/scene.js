@@ -1,4 +1,3 @@
-// import scene from '../core/scene.js';
 import Camera from '../core/camera.js';
 import renderer from '../core/renderer.js';
 import { ambientLight } from '../core/light.js';
@@ -12,12 +11,11 @@ import PhysicsInstance from '../core/physics.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
-import { getRandomNumber } from '../utils/random.js';
+import { getRandomNumber, resetRandom } from '../utils/random.js';
 
 let celestialBodies = [];
 let speedMultiplier = 1.0;
 const chunkSize = 512;
-
 
 export function setSpeedMultiplier(value) {
     speedMultiplier = value;
@@ -33,6 +31,7 @@ export function displayScene(container){
 }
 
 export function regenerateSolarSystem(){
+    resetRandom();
     // Clear all
     for (const celestialBody of celestialBodies) {
         scene.remove(celestialBody.mesh);
@@ -85,7 +84,6 @@ export function addBackground(){
     starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
     const stars = new THREE.Points(starGeometry, starMaterial);
     scene.add(stars);
-
 }
 
 export function initScene(){
@@ -101,11 +99,9 @@ export function initScene(){
     addSolarSystem();
     addBackground();
 
-    // Add motion blur effect
     const composer = new EffectComposer(renderer);
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
-
     const afterimagePass = new AfterimagePass(0.5);
     composer.addPass(afterimagePass);
 
@@ -134,7 +130,7 @@ export function initScene(){
             
             detectRaycast();
 
-            // composer.render();
+            composer.render();
             PhysicsInstance.update(deltaTime);
             spacecraft.update(deltaTime);
             camera.update();

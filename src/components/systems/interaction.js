@@ -15,7 +15,6 @@ export function setupInteraction(renderer, camera, scene, celestialBodies) {
 
     function onClick(event) {
         event.preventDefault();
-        // if left shift is pressed and an object is intersected
         if (event.shiftKey && INTERSECTED) {
             camera.focusOnObject(INTERSECTED);
         }
@@ -47,9 +46,7 @@ export function setupInteraction(renderer, camera, scene, celestialBodies) {
     }
 
     window.addEventListener('mousemove', onMouseMove, false);
-    // window.onmouseup
     window.addEventListener('mouseup', onClick, false);
-    // window.addEventListener('click', onClick, false);
     window.addEventListener('keypress', onKeyPress, false);
 
     return detectRaycast;

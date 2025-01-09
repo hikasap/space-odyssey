@@ -1,5 +1,7 @@
 import seedrandom from 'seedrandom'; 
-let rng = seedrandom('default-seed');
+
+let _seed = '0';
+let _rng = seedrandom(_seed);
 
 /**
  * Allows switching or editing the seed at runtime with an integer
@@ -8,7 +10,8 @@ let rng = seedrandom('default-seed');
  * @example
  */
 export function setSeed(seed) {
-    rng = seedrandom(seed);
+    _rng = seedrandom(seed);
+    _seed = seed;
 } 
 
 /*
@@ -17,5 +20,17 @@ export function setSeed(seed) {
 * @example
 */
 export function getRandomNumber() {
-    return rng();
+    return _rng.quick();
+}
+
+/* 
+* Reset the random generator with current seed
+* to ensure the same sequence of random numbers
+* returned for a certain procedure. Call this
+* before starting a new procedure.
+* @returns {void}
+* @example
+*/
+export function resetRandom() {
+    _rng = seedrandom(_seed);
 }
