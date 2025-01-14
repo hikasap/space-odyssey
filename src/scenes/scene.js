@@ -13,144 +13,169 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
 import { getRandomNumber, resetRandom } from '../utils/random.js';
 
-let celestialBodies = [];
-let speedMultiplier = 1.0;
-const chunkSize = 512;
-
-export function setSpeedMultiplier(value) {
-    speedMultiplier = value;
-}
-
-let scene = null;
-
-export function displayScene(container){
-    if (!scene) {
-        initScene();
-    }
-    container.appendChild(renderer.domElement);
-}
-
-export function regenerateSolarSystem(){
-    resetRandom();
-    // Clear all
-    for (const celestialBody of celestialBodies) {
-        scene.remove(celestialBody.mesh);
+export class SpaceScene{
+    constructor(){
+        this._composer = null;
+        this._scene = new THREE.Scene();
+        this._celestialBodies = [];
+        this._speedMultiplier = 1.0;
+        this._chunkSize = 512;
+        
+        this._camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 8 * this._chunkSize);
+        this._camera.setOrbitControls(renderer.domElement);
+        
+        PhysicsInstance.init().then(() => {
+            this.initScene();
+        }).catch((error) => {
+            console.error('Failed to initialize physics', error);
+        });
     }
 
-    celestialBodies = [];
-    addSolarSystem();
-}
-
-export function addSolarSystem(){
-
-    const x_range = [0];
-    const y_range = [0];
-    const z_range = [0];
-    for (const x of x_range) {
-        for (const y of y_range) {
-            for (const z of z_range) {
-                const chunkOffset = new THREE.Vector3(x * chunkSize, y * chunkSize, z * chunkSize);
-                generateSolarSystem(scene, celestialBodies, chunkOffset, chunkSize);
-            }
-        }
+    get celestialBodies(){
+        return this._celestialBodies;
     }
-}
 
-export function addBackground(){
+    get speedMultiplier(){
+        return this._speedMultiplier;
+    }
 
-    function getSphericalRandomDot(radius)
-    {
-        const u = getRandomNumber();
-        const v = getRandomNumber();
+    get chunkSize(){
+        return this._chunkSize;
+    }
+
+    set speedMultiplier(value){
+        this._speedMultiplier = value;
+    }
+
+    set chunkSize(value){
+        this._chunkSize = value;
+    }
+
+    set celestialBodies(value){
+        this._celestialBodies = value;
+    }
+
+    get camera(){
+        return this._camera;
+    }
+
+    initScene(){
+
+        this._scene = new THREE.Scene();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        this._scene.add(ambientLight);
     
-        const phi = 2 * Math.PI * u;
-        const theta = Math.acos(2 * v - 1);
+        this.addSolarSystem();
+        this.addBackground();
     
-        const sinTheta = Math.sin(theta);
-        const x = radius * sinTheta * Math.cos(phi);
-        const y = radius * sinTheta * Math.sin(phi);
-        const z = radius * Math.cos(theta);
+        this._composer = new EffectComposer(renderer);
+        this._composer.addPass(new RenderPass(this._scene, this._camera));
+        this._composer.addPass(new AfterimagePass(0.5));
     
-        return new THREE.Vector3(x, y, z);
-    }
-    // Create starfield
-    const starGeometry = new THREE.BufferGeometry();
-    const starMaterial = new THREE.PointsMaterial({ color: 0xaaaaaa });
-    const starVertices = [];
-    for (let i = 0; i < 10000; i++) {
-        const point = getSphericalRandomDot(2 * chunkSize);
-        starVertices.push(point.x, point.y, point.z);
-    }
-    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-    const stars = new THREE.Points(starGeometry, starMaterial);
-    scene.add(stars);
-}
-
-export function initScene(){
-
-    scene = new THREE.Scene();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    const camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 8 * chunkSize);
-    camera.setOrbitControls(renderer.domElement);
-
-    scene.add(ambientLight);
-
-    addSolarSystem();
-    addBackground();
-
-    const composer = new EffectComposer(renderer);
-    const renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
-    const afterimagePass = new AfterimagePass(0.5);
-    composer.addPass(afterimagePass);
-
-    Promise.all([
-        PhysicsInstance.init(),
-    ]).then(() => {
-
-        const spaceCraftPosition = new THREE.Vector3(0, 0, chunkSize / 2);
-        camera.position.set(0, 0, chunkSize);
-        const spacecraft = new Spacecraft(spaceCraftPosition , scene,  () => {
-            camera.setFollowTarget(spacecraft.getMesh());
+        const spaceCraftPosition = new THREE.Vector3(0, 0, this.chunkSize / 2);
+        this._camera.position.set(0, 0, this.chunkSize);
+        this._spacecraft = new Spacecraft(spaceCraftPosition, this._scene, () => {
+            this._camera.setFollowTarget(this._spacecraft.getMesh());
         });
 
-        const detectRaycast = setupInteraction(renderer, camera, scene, celestialBodies);
+        this._detectRaycast = setupInteraction(this);
 
-        function animate() {
-            requestAnimationFrame(animate);
-            const deltaTime = 1.0/60.0 * speedMultiplier;
+        this.update();
 
-            celestialBodies.forEach(body => {
-                body.rotate(deltaTime);
-                if (body instanceof Planet || body instanceof Moon) {
-                    body.updateOrbit(deltaTime);
-                }
-            });
-            
-            detectRaycast();
+        window.addEventListener('resize', this.onWindowResize.bind(this));
+    }
 
-            composer.render();
-            PhysicsInstance.update(deltaTime);
-            spacecraft.update(deltaTime);
-            camera.update();
-            
-            renderer.render(scene, camera);
-        }
-
-        animate();
-
-    }).catch((error) => {
-        console.error('Failed to initialize physics', error);
-    });
-
-    // Handle window resizing
-    window.addEventListener('resize', () => {
+    onWindowResize() {
         const width = window.innerWidth;
         const height = window.innerHeight;
         renderer.setSize(width, height);
-        camera.aspect = width / height
-        camera.updateProjectionMatrix();
-    });
-}
+        this._camera.aspect = width / height;
+        this._camera.updateProjectionMatrix();
+    }
+
+    update() {
+        requestAnimationFrame(this.update.bind(this));
+        const deltaTime = 1.0/60.0 * this._speedMultiplier;
+
+        this._celestialBodies.forEach(body => {
+            body.rotate(deltaTime);
+            if (body instanceof Planet || body instanceof Moon) {
+                body.updateOrbit(deltaTime);
+            }
+        });
+        
+        PhysicsInstance.update(deltaTime);
+        this._detectRaycast();
+        this._composer.render();
+        this._spacecraft.update(deltaTime);
+        this._camera.update();
+        
+        renderer.render(this._scene, this._camera);
+    }
+
+
+    regenerateSolarSystem(){
+        resetRandom();
+        // Clear all
+        for (const celestialBody of this._celestialBodies) {
+            this._scene.remove(celestialBody.mesh);
+        }
+    
+        this._celestialBodies = [];
+        this.addSolarSystem();
+    }
+    
+        addSolarSystem(){
+        const x_range = [0];
+        const y_range = [0];
+        const z_range = [0];
+        for (const x of x_range) {
+            for (const y of y_range) {
+                for (const z of z_range) {
+                    const chunkOffset = new THREE.Vector3(x * this._chunkSize, y * this._chunkSize, z * this._chunkSize);
+                    generateSolarSystem(this._scene, this._celestialBodies, chunkOffset, this._chunkSize);
+                }
+            }
+        }
+    }
+
+    addBackground(){
+        function getSphericalRandomDot(radius)
+        {
+            const u = getRandomNumber();
+            const v = getRandomNumber();
+        
+            const phi = 2 * Math.PI * u;
+            const theta = Math.acos(2 * v - 1);
+        
+            const sinTheta = Math.sin(theta);
+            const x = radius * sinTheta * Math.cos(phi);
+            const y = radius * sinTheta * Math.sin(phi);
+            const z = radius * Math.cos(theta);
+        
+            return new THREE.Vector3(x, y, z);
+        }
+        // Create starfield
+        const starGeometry = new THREE.BufferGeometry();
+        const starMaterial = new THREE.PointsMaterial({ color: 0xaaaaaa });
+        const starVertices = [];
+        for (let i = 0; i < 10000; i++) {
+            const point = getSphericalRandomDot(2 * this._chunkSize);
+            starVertices.push(point.x, point.y, point.z);
+        }
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        this._scene.add(stars);
+    }
+
+    displayScene(container){
+        container.appendChild(renderer.domElement);
+    }            
+} 
+
+export default SpaceScene;
+
+
+
+
 

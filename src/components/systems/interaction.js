@@ -5,7 +5,7 @@ const mouse = new THREE.Vector2();
 let INTERSECTED;
 let mouseMoved = false;
 
-export function setupInteraction(renderer, camera, scene, celestialBodies) {
+export function setupInteraction(scene) {
     function onMouseMove(event) {
         event.preventDefault();
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -16,20 +16,20 @@ export function setupInteraction(renderer, camera, scene, celestialBodies) {
     function onClick(event) {
         event.preventDefault();
         if (event.shiftKey && INTERSECTED) {
-            camera.focusOnObject(INTERSECTED);
+            scene.camera.focusOnObject(INTERSECTED);
         }
     }
 
     function onKeyPress(event) {
         if (event.key === 'r' || event.key === 'R') {
-            camera.resetFocus();
+            scene.camera.resetFocus();
         }
     }
 
     function detectRaycast() {
         if (mouseMoved) {
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(celestialBodies.map(body => body.mesh));
+            raycaster.setFromCamera(mouse, scene.camera);
+            const intersects = raycaster.intersectObjects(scene.celestialBodies.map(body => body.mesh));
 
             if (intersects.length > 0) {
                 if (INTERSECTED != intersects[0].object) {

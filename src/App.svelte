@@ -1,25 +1,26 @@
 <script>
   import { onMount } from 'svelte';
-  import { displayScene, setSpeedMultiplier, regenerateSolarSystem } from './scenes/scene.js';
+  import SpaceScene from './scenes/scene.js';
   import { setSeed } from './utils/random.js';
 
+  let spaceScane = new SpaceScene();
   let container;
   let speedMultiplier = 1;
   let seed = 0;
 
   onMount(() => {
-    const scene = displayScene(container);
+    spaceScane.displayScene(container);
   });
 
   function handleSeedChange(event) {
     seed = event.target.value;
     setSeed(seed.toString());
-    regenerateSolarSystem();
+    spaceScane.regenerateSolarSystem();
   }
 
   function handleSpeedChange(event) {
     speedMultiplier = parseFloat(event.target.value);
-    setSpeedMultiplier(speedMultiplier);
+    spaceScane.speedMultiplier = speedMultiplier;
   }
 
 </script>
