@@ -3,26 +3,16 @@
   import { onMount } from 'svelte';
   import SpaceScene from './scenes/scene.js';
   import { setSeed } from './utils/random.js';
+  import { gameConfig } from './systems/configs/gameConfig';
 
   let spaceScane = new SpaceScene();
   let container;
   let speedMultiplier = 1;
   let seed = 0;
-
+  
   onMount(() => {
     spaceScane.displayScene(container);
   });
-
-  function handleSeedChange(value) {
-    seed = value;
-    setSeed(seed.toString());
-    spaceScane.regenerateSolarSystem();
-  }
-
-  function handleSpeedChange(value) {
-    speedMultiplier = parseFloat(value);
-    spaceScane.speedMultiplier = speedMultiplier;
-  }
 
 </script>
 
@@ -40,29 +30,6 @@
     <li><strong>R:</strong> Reset Focus</li>
   </ul>  
 </div>
-
-<div class="speed-slider" style="position: fixed; top: 20px; right: 20px; z-index:2000;">
-  <label style="color: #ffffff;"for="speed-input">Game Speed: {speedMultiplier}x</label>
-  <Slider 
-    min={0.25}
-    max={5}
-    step={0.25}
-    bind:value={speedMultiplier}
-    onValueChange={handleSpeedChange}
-  />
-</div>
-
-<div class="seed-slider" style="position: fixed; top: 80px; right: 20px; z-index:2000;">
-  <label style="color: #ffffff;" for="seed-input">Solar System Seed: {seed}</label>
-  <Slider
-    min={0}
-    max={1000}
-    bind:value={seed}
-    onValueCommit={handleSeedChange}
-  />
-</div>
-
-
 
 <!-- Three.js Scene Container -->
 <div bind:this={container} style="width: 100%; height: 100vh;"></div>
@@ -146,36 +113,4 @@
   .hud strong {
     color: #ffd700;
   }
-
-  .speed-slider {
-    background-color: #ffd70055;
-    color: #ffffff;
-    width: 200px;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
-  }
-
-  .speed-slider label {
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  .seed-slider {
-    background-color: #ffd70055;
-    color: #ffffff;
-    width: 200px;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
-    margin-top: 10px;
-  }
-
-  .seed-slider label {
-    display: block;
-    margin-bottom: 5px;
-  }
-
 </style>

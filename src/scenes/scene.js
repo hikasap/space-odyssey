@@ -11,19 +11,19 @@ import PhysicsInstance from '../core/physics.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
-import { getRandomNumber, resetRandom } from '../utils/random.js';
+import { getRandomNumber, resetRandom, setSeed } from '../utils/random.js';
+import { gameConfig } from '../systems/configs/gameConfig.js';
 
 export class SpaceScene{
     constructor(){
         this._composer = null;
         this._scene = new THREE.Scene();
-        this._celestialBodies = [];
-        this._speedMultiplier = 1.0;
-        this._chunkSize = 512;
-        
-        this._camera = new Camera(75, window.innerWidth / window.innerHeight, 0.01, 8 * this._chunkSize);
+        this._celestialBodies = [];    
+        this._camera = new Camera(gameConfig.cameraFov, window.innerWidth / window.innerHeight, gameConfig.cameraNear, gameConfig.cameraFar);
         this._camera.setOrbitControls(renderer.domElement);
         
+        console.log(gameConfig);
+
         PhysicsInstance.init().then(() => {
             this.initScene();
         }).catch((error) => {
@@ -33,22 +33,6 @@ export class SpaceScene{
 
     get celestialBodies(){
         return this._celestialBodies;
-    }
-
-    get speedMultiplier(){
-        return this._speedMultiplier;
-    }
-
-    get chunkSize(){
-        return this._chunkSize;
-    }
-
-    set speedMultiplier(value){
-        this._speedMultiplier = value;
-    }
-
-    set chunkSize(value){
-        this._chunkSize = value;
     }
 
     set celestialBodies(value){
@@ -72,8 +56,8 @@ export class SpaceScene{
         this._composer.addPass(new RenderPass(this._scene, this._camera));
         this._composer.addPass(new AfterimagePass(0.5));
     
-        const spaceCraftPosition = new THREE.Vector3(0, 0, this.chunkSize / 2);
-        this._camera.position.set(0, 0, this.chunkSize);
+        const spaceCraftPosition = new THREE.Vector3(0, 0, gameConfig.chunkSize / 2);
+        this._camera.position.set(0, 0, gameConfig.chunkSize);
         this._spacecraft = new Spacecraft(spaceCraftPosition, this._scene, () => {
             this._camera.setFollowTarget(this._spacecraft.getMesh());
         });
@@ -83,6 +67,14 @@ export class SpaceScene{
         this.update();
 
         window.addEventListener('resize', this.onWindowResize.bind(this));
+
+        gameConfig.addEventListener('solarSystemSeedChanged', () => {
+            this.regenerateSolarSystem();
+        });
+
+        gameConfig.addEventListener('chunkSizeChanged', () => {
+            this.regenerateSolarSystem();
+        });
     }
 
     onWindowResize() {
@@ -95,7 +87,7 @@ export class SpaceScene{
 
     update() {
         requestAnimationFrame(this.update.bind(this));
-        const deltaTime = 1.0/60.0 * this._speedMultiplier;
+        const deltaTime = 1.0/60.0 * gameConfig.speedMultiplier;
 
         this._celestialBodies.forEach(body => {
             body.rotate(deltaTime);
@@ -115,6 +107,7 @@ export class SpaceScene{
 
 
     regenerateSolarSystem(){
+        setSeed(gameConfig.solarSystemSeed.toString());
         resetRandom();
         // Clear all
         for (const celestialBody of this._celestialBodies) {
@@ -132,11 +125,12 @@ export class SpaceScene{
         for (const x of x_range) {
             for (const y of y_range) {
                 for (const z of z_range) {
-                    const chunkOffset = new THREE.Vector3(x * this._chunkSize, y * this._chunkSize, z * this._chunkSize);
-                    generateSolarSystem(this._scene, this._celestialBodies, chunkOffset, this._chunkSize);
+                    const chunkOffset = new THREE.Vector3(x * gameConfig.chunkSize, y * gameConfig.chunkSize, z * gameConfig.chunkSize);
+                    generateSolarSystem(this._scene, this._celestialBodies, chunkOffset, gameConfig.chunkSize);
                 }
             }
         }
+
     }
 
     addBackground(){
@@ -157,10 +151,10 @@ export class SpaceScene{
         }
         // Create starfield
         const starGeometry = new THREE.BufferGeometry();
-        const starMaterial = new THREE.PointsMaterial({ color: 0xaaaaaa });
+        const starMaterial = new THREE.PointsMaterial({ color: gameConfig.starfieldColor });
         const starVertices = [];
-        for (let i = 0; i < 10000; i++) {
-            const point = getSphericalRandomDot(2 * this._chunkSize);
+        for (let i = 0; i < gameConfig.starfieldDensity; i++) {
+            const point = getSphericalRandomDot(2 * gameConfig.chunkSize);
             starVertices.push(point.x, point.y, point.z);
         }
         starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));

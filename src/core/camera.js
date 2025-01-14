@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import { gameConfig } from '../systems/configs/gameConfig.js';
 
 class Camera extends THREE.PerspectiveCamera {
     constructor(fov, aspect, near, far) {
@@ -8,9 +9,24 @@ class Camera extends THREE.PerspectiveCamera {
         this.followTarget = null;
         this.focusedObject = null;
         this.orbitalTarget = null;
-        this.lerpSpeed = 0.06;
         this.controls = null;
         this.userInteracting = false;
+
+        gameConfig.addEventListener('cameraFovChanged', () => {
+            this.fov = gameConfig.cameraFov;
+            this.updateProjectionMatrix();
+        });
+
+        gameConfig.addEventListener('cameraNearChanged', () => {
+            this.near = gameConfig.cameraNear;
+            this.updateProjectionMatrix();
+        });
+
+        gameConfig.addEventListener('cameraFarChanged', () => {
+            this.far = gameConfig.cameraFar;
+            this.updateProjectionMatrix();
+        });
+
     }
 
     
@@ -88,19 +104,19 @@ class Camera extends THREE.PerspectiveCamera {
                     .copy(this.focusedObject.position)
                     .add(targetOffset);
 
-                this.position.lerp(targetPosition, this.lerpSpeed);
+                this.position.lerp(targetPosition, gameConfig.cameraLerpSpeed);
                 this.lookAt(this.focusedObject.position);
             }
 
         }else if (this.focusedObject == 0) {
-            const offset = new THREE.Vector3(0, 0.1, -0.2);
+            const offset = gameConfig.cameraFollowOffset.clone();
             offset.applyQuaternion(this.followTarget.quaternion);
 
             const targetPosition = new THREE.Vector3()
                 .copy(this.followTarget.position)
                 .add(offset);
 
-            this.position.lerp(targetPosition, this.lerpSpeed);
+            this.position.lerp(targetPosition, gameConfig.cameraLerpSpeed);
             this.lookAt(this.followTarget.position);
         }
     }
