@@ -50,8 +50,10 @@ export class SpaceScene{
         this._scene.add(ambientLight);
     
         this.addSolarSystem();
+        this.addChunkBorders();
         this.addBackground();
     
+
         this._composer = new EffectComposer(renderer);
         this._composer.addPass(new RenderPass(this._scene, this._camera));
         this._composer.addPass(new AfterimagePass(0.5));
@@ -86,7 +88,36 @@ export class SpaceScene{
             this.addBackground();
         }
         );
+
+        gameConfig.addEventListener('displayChunkBordersChanged', () => {
+            if (gameConfig.displayChunkBorders) {
+                this._scene.add(this.chunkLine);
+            } else {
+                this._scene.remove(this.chunkLine);
+            }
+        }
+        );
+
+        gameConfig.addEventListener('displayStarfieldChanged', () => {
+            if (gameConfig.displayStarfield) {
+                this._scene.add(this.stars);
+            } else {
+                this._scene.remove(this.stars);
+            }
+        }
+        );
+
     }
+
+    addChunkBorders(){
+        const CHUNK_SIZE = gameConfig.chunkSize;
+        const chunkGeometry = new THREE.BoxGeometry(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
+        const chunkWireframe = new THREE.EdgesGeometry(chunkGeometry);
+        const chunkLine = new THREE.LineSegments(chunkWireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
+        this.chunkLine = chunkLine;
+        if (gameConfig.displayChunkBorders) this._scene.add(chunkLine);
+    }
+
 
     onWindowResize() {
         const width = window.innerWidth;
@@ -138,6 +169,7 @@ export class SpaceScene{
                 for (const z of z_range) {
                     const chunkOffset = new THREE.Vector3(x * gameConfig.chunkSize, y * gameConfig.chunkSize, z * gameConfig.chunkSize);
                     generateSolarSystem(this._scene, this._celestialBodies, chunkOffset, gameConfig.chunkSize);
+                    
                 }
             }
         }
@@ -170,7 +202,7 @@ export class SpaceScene{
         }
         starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
         this.stars = new THREE.Points(starGeometry, starMaterial);
-        this._scene.add(this.stars);
+        if (gameConfig.displayStarfield) this._scene.add(this.stars);
     }
 
     displayScene(container){

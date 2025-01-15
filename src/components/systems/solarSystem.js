@@ -10,12 +10,6 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
     const CHUNK_SIZE = chunkSize;
     const HALF_SIZE = CHUNK_SIZE / 2;
 
-    const chunkGeometry = new THREE.BoxGeometry(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
-    const chunkWireframe = new THREE.EdgesGeometry(chunkGeometry);
-    const chunkLine = new THREE.LineSegments(chunkWireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
-    chunkLine.position.copy(chunkOffset);
-    scene.add(chunkLine);
-
     const starSize = getRandomNumber() * 20 + 50;
     const starColor = 0xffff00 + getRandomNumber() * 0x0000cc;
     const star = new Star(starSize, starColor);

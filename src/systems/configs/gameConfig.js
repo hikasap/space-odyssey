@@ -21,7 +21,9 @@ export class GameConfig {
             cameraFollowOffsetY : 0.1,
             cameraFollowOffsetZ : -0.2,
             starfieldDensity: 10000,
-            starfieldColor: 0xaaaaaa
+            starfieldColor: 0xaaaaaa,
+            ambientLightColor: 0xffffff,
+            ambientLightIntensity: 0.25,
         };
         this.initAll();
         this.gui = this.getDatGui();
@@ -80,6 +82,10 @@ export class GameConfig {
         starfieldFolder.add(config, 'starfieldDensity', 1000, 50000).name('Starfield Density');
         starfieldFolder.addColor(config, 'starfieldColor').name('Starfield Color');
 
+        const lightFolder = gui.addFolder('Light');
+        lightFolder.addColor(config, 'ambientLightColor').name('Ambient Light Color');
+        lightFolder.add(config, 'ambientLightIntensity', 0, 1).name('Ambient Light Intensity');
+        
         gui.add(config, 'resetAll').name('Reset All');
 
         return gui;
@@ -236,6 +242,25 @@ export class GameConfig {
         this._cameraLerpSpeed = value;
         this.dispatchEvent('cameraLerpSpeedChanged', value);
     }
+
+    get ambientLightColor() {
+        return this._ambientLightColor;
+    }
+
+    set ambientLightColor(value) {
+        this._ambientLightColor = value;
+        this.dispatchEvent('ambientLightColorChanged', value);
+    }
+
+    get ambientLightIntensity() {
+        return this._ambientLightIntensity;
+    }
+
+    set ambientLightIntensity(value) {
+        this._ambientLightIntensity = value;
+        this.dispatchEvent('ambientLightIntensityChanged', value);
+    }
+
 
 }
 
