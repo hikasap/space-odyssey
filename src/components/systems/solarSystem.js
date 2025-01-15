@@ -16,7 +16,7 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
     chunkLine.position.copy(chunkOffset);
     scene.add(chunkLine);
 
-    const starSize = getRandomNumber() * 5 + 10;
+    const starSize = getRandomNumber() * 20 + 50;
     const starColor = 0xffff00 + getRandomNumber() * 0x0000cc;
     const star = new Star(starSize, starColor);
     star.mesh.position.add(chunkOffset);
@@ -25,7 +25,7 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
 
     const numPlanets = Math.floor(getRandomNumber() * 5) + 3;
     for (let i = 0; i < numPlanets; i++) {
-        const planetSize = getRandomNumber() * 5 + 2;
+        const planetSize = getRandomNumber() * 10 + 10;
         const planetColor = getRandomNumber() * 0xffffff;
         const maxSemiMajorAxis = HALF_SIZE - planetSize - starSize * 2;
         const semiMajorAxis = planetSize + starSize * 2 +  getRandomNumber() * maxSemiMajorAxis;

@@ -6,7 +6,7 @@ export class GameConfig {
     constructor() {
         this.listeners = {};
         this._defaultValues = {
-            chunkSize: 256,
+            chunkSize: 2048,
             speedMultiplier: 1.0,
             solarSystemSeed: 0,
             displayStarfield: true,
@@ -15,7 +15,7 @@ export class GameConfig {
             afterimagePassDamp: 0.5,
             cameraFov: 75,
             cameraNear: 0.01,
-            cameraFar: 1024,
+            cameraFar: 2048 * 4,
             cameraLerpSpeed: 0.06,
             cameraFollowOffsetX : 0,
             cameraFollowOffsetY : 0.1,
@@ -42,8 +42,6 @@ export class GameConfig {
         }
     }
 
-    /* Refresh all folders 
-    */
     updateGui() {
         const folderNames = Object.keys(this.gui.__folders);
         folderNames.forEach(folderName => {
@@ -58,8 +56,8 @@ export class GameConfig {
         const gui = new dat.GUI();
         const config = this;
         const generalFolder = gui.addFolder('General');
-        generalFolder.add(config, 'chunkSize', 128, 1024).name('Chunk Size');
-        generalFolder.add(config, 'speedMultiplier', 0.25, 5, 0.25).name('Speed Multiplier');
+        generalFolder.add(config, 'chunkSize', 128, 2048).name('Chunk Size');
+        generalFolder.add(config, 'speedMultiplier', 0.25, 50, 0.25).name('Speed Multiplier');
         generalFolder.add(config, 'solarSystemSeed', 0, 1000).name('Solar System Seed');
 
         const displayFolder = gui.addFolder('Display');
@@ -71,7 +69,7 @@ export class GameConfig {
         const cameraFolder = gui.addFolder('Camera');
         cameraFolder.add(config, 'cameraFov', 30, 120).name('Camera FOV');
         cameraFolder.add(config, 'cameraNear', 0.01, 1, 0.01).name('Camera Near');
-        cameraFolder.add(config, 'cameraFar', 512, 2048).name('Camera Far');
+        cameraFolder.add(config, 'cameraFar', 512, 16384).name('Camera Far');
         cameraFolder.add(config, 'cameraLerpSpeed', 0.01, 1).name('Camera Lerp Speed');
         cameraFolder.add(config, 'cameraFollowOffsetX', -1.0, 1.0, 0.01).name('Camera Follow Offset X');
         cameraFolder.add(config, 'cameraFollowOffsetY', -1.0, 1.0, 0.01).name('Camera Follow Offset Y');
