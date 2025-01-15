@@ -75,6 +75,17 @@ export class SpaceScene{
         gameConfig.addEventListener('chunkSizeChanged', () => {
             this.regenerateSolarSystem();
         });
+
+        gameConfig.addEventListener('starfieldDensityChanged', () => {
+            this._scene.remove(this.stars);
+            this.addBackground();
+        });
+
+        gameConfig.addEventListener('starfieldColorChanged', () => {
+            this._scene.remove(this.stars);
+            this.addBackground();
+        }
+        );
     }
 
     onWindowResize() {
@@ -158,8 +169,8 @@ export class SpaceScene{
             starVertices.push(point.x, point.y, point.z);
         }
         starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-        const stars = new THREE.Points(starGeometry, starMaterial);
-        this._scene.add(stars);
+        this.stars = new THREE.Points(starGeometry, starMaterial);
+        this._scene.add(this.stars);
     }
 
     displayScene(container){
