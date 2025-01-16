@@ -8,7 +8,7 @@ export class Star extends CelestialBody {
         this.mesh.material.emissive = new THREE.Color(color);
         this.mesh.material.emissiveIntensity = 0.8;
 
-        this.light = new THREE.PointLight(color, 10000, 0, 2);
+        this.light = new THREE.PointLight(color, 50000, 0, 2);
         this.light.position.set(0, 0, 0);
         this.mesh.add(this.light);
     }

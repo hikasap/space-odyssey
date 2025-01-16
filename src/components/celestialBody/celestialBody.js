@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getRandomNumber } from '../../utils/random';
+import { createGoldbergPolyhedron } from '../../utils/goldbergPolygedron';
 
 export class CelestialBody {
     constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = 'assets/textures/a_albedo.png') {
@@ -13,8 +14,10 @@ export class CelestialBody {
         const texture = textureLoader.load(texturePath);
 
         let geometry;
+
         if (type === 'sphere') {
-            geometry = new THREE.SphereGeometry(size, 12, 12);
+            // geometry = new THREE.SphereGeometry(size, 12, 12);
+            geometry = createGoldbergPolyhedron(size, 3);
             this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
         } else if (type === 'cube') {
             geometry = new THREE.BoxGeometry(size, size, size);

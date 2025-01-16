@@ -37,9 +37,9 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
 
         const numMoons = Math.floor(getRandomNumber() * 3);
         for (let j = 0; j < numMoons; j++) {
-            const moonSize = getRandomNumber() * 0.8 + 0.2;
+            const moonSize = getRandomNumber() * 0.8 + 1;
             const moonColor = getRandomNumber() * 0xffffff;
-            const moonSemiMajorAxis = planetSize + moonSize + getRandomNumber() * 2;
+            const moonSemiMajorAxis = 2 * (planetSize + moonSize) + getRandomNumber() * 2;
             const moonEccentricity = getRandomNumber() * 0.2;
             const moonOrbitalPeriod = (orbitalPeriod / 2) + getRandomNumber() * (orbitalPeriod / 2);
             const moon = new Moon(moonSize, moonColor, moonSemiMajorAxis, moonEccentricity, moonOrbitalPeriod, planet);
