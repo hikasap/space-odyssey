@@ -120,7 +120,6 @@ export function createGoldbergPolyhedron(radius = 1, detail = 2, roughness = 0.0
   for (let i = 0; i < finalPositions.length; i++) {
     // random radial offset
     const noiseVal = perlin.noise(finalPositions[i].x, finalPositions[i].y, finalPositions[i].z);
-    console.log(noiseVal);
     const treshold = Math.floor(noiseVal * 10 / 7);
     const offset = treshold * roughness;
     finalPositions[i].multiplyScalar(radius * (1 + offset));

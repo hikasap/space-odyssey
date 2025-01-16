@@ -159,7 +159,7 @@ export class Spacecraft {
     update(deltaTime) {
         if (!this.model) return;
     
-        const mainEngineForce = 100 * deltaTime;
+        const mainEngineForce = 500 * deltaTime;
         const sideEngineForce = 2.5 * deltaTime;
         const rotationalFactor = 0.1;
         const backwardEngineForce = 0.5 * deltaTime;

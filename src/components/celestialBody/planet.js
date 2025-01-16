@@ -1,3 +1,4 @@
+import { generateRandomName } from '../../utils/nameGenerator.js';
 import { getRandomNumber } from '../../utils/random.js';
 import { CelestialBody } from './celestialBody.js';
 import * as THREE from 'three';
@@ -35,9 +36,15 @@ export class Planet extends CelestialBody {
         this.inclination = getRandomNumber() * Math.PI * 2; 
         this.parentStar = parentStar;
         this.has_atmosphere = getRandomNumber() > 0.5;
+        this.name = generateRandomName();
+
+        console.log("name", this.name);
     
+
+
+
         // if (this.has_atmosphere) {
-            this.addAtmosphere();
+        this.addAtmosphere();
         // }
     }
 
