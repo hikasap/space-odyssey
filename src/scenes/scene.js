@@ -149,8 +149,6 @@ export class SpaceScene{
 
 
     regenerateSolarSystem(){
-        setSeed(gameConfig.solarSystemSeed.toString());
-        resetRandom();
         // Clear all
         for (const celestialBody of this._celestialBodies) {
             this._scene.remove(celestialBody.mesh);
@@ -160,7 +158,9 @@ export class SpaceScene{
         this.addSolarSystem();
     }
     
-        addSolarSystem(){
+    addSolarSystem(){
+        setSeed(gameConfig.solarSystemSeed.toString());
+        resetRandom();
         const x_range = [0];
         const y_range = [0];
         const z_range = [0];

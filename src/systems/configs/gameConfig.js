@@ -8,7 +8,7 @@ export class GameConfig {
         this._defaultValues = {
             chunkSize: 2048,
             speedMultiplier: 1.0,
-            solarSystemSeed: 0,
+            solarSystemSeed: 61,
             displayStarfield: true,
             displayChunkBorders: false,
             displayOrbits: true,
@@ -16,7 +16,7 @@ export class GameConfig {
             cameraFov: 75,
             cameraNear: 0.01,
             cameraFar: 2048 * 4,
-            cameraLerpSpeed: 0.06,
+            cameraLerpSpeed: 0.2,
             cameraFollowOffsetX : 0,
             cameraFollowOffsetY : 0.1,
             cameraFollowOffsetZ : -0.2,
@@ -59,7 +59,7 @@ export class GameConfig {
         const config = this;
         const generalFolder = gui.addFolder('General');
         generalFolder.add(config, 'chunkSize', 128, 2048).name('Chunk Size');
-        generalFolder.add(config, 'speedMultiplier', 0.25, 50, 0.25).name('Speed Multiplier');
+        generalFolder.add(config, 'speedMultiplier', 0.25, 500, 0.25).name('Speed Multiplier');
         generalFolder.add(config, 'solarSystemSeed', 0, 1000).name('Solar System Seed');
 
         const displayFolder = gui.addFolder('Display');

@@ -4,27 +4,24 @@ import { CelestialBody } from './celestialBody.js';
 import * as THREE from 'three';
 
 const atmosphereVertexShader = `
-varying vec3 vWorldPosition;
+varying vec3 vNormal;
 void main() {
     vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-    vWorldPosition = worldPosition.xyz;
+    vNormal = normalize(normalMatrix * normal);
     gl_Position = projectionMatrix * viewMatrix * worldPosition;
 }
 `;
 
 const atmosphereFragmentShader = `
-varying vec3 vWorldPosition;
-uniform float planetRadius;
-uniform float atmosphereRadius;
-uniform float planetDist;
+varying vec3 vNormal;
+uniform vec3 atmosphereColor;
+
 void main() {
-    float height = length(vWorldPosition) - planetDist;
-    // Make height from planet
-    float alpha = clamp(1.0 - abs(height) / (atmosphereRadius - planetRadius), 0.0, 1.0);
-    // Increase alpha multiplier
-    gl_FragColor = vec4(alpha, 1, 1, alpha);
+    float intensity = pow(0.5 - dot(vNormal, vec3(0, 0, 1)), 0.75);
+    gl_FragColor = vec4(atmosphereColor, 0.5) * intensity;
 }
 `;
+
 
 export class Planet extends CelestialBody {
     constructor(size, color, semiMajorAxis, eccentricity, orbitalPeriod, parentStar) {
@@ -35,32 +32,28 @@ export class Planet extends CelestialBody {
         this.orbitalAngle = getRandomNumber() * Math.PI * 2; 
         this.inclination = getRandomNumber() * Math.PI * 2; 
         this.parentStar = parentStar;
+        
         this.has_atmosphere = getRandomNumber() > 0.5;
         this.name = generateRandomName();
-
         console.log("name", this.name);
-    
-
-
-
-        // if (this.has_atmosphere) {
-        this.addAtmosphere();
-        // }
+        if (this.has_atmosphere) {
+            this.addAtmosphere();
+        }
     }
 
     addAtmosphere(){
-        const distToStart = this.mesh.position.length();
-        console.log(distToStart);
-        const atmosphereGeo = new THREE.SphereGeometry(this.size * 1.25, 32, 32);
+        this.atmosphereThickness = getRandomNumber() * 0.5 + 1;
+        this.atmosphereColor = getRandomNumber() * 0xffffff;
+        console.log(this.size * this.atmosphereThickness);
+        const atmosphereGeo = new THREE.SphereGeometry(this.size * this.atmosphereThickness, 32, 32);
         const atmosphereMat = new THREE.ShaderMaterial({
             vertexShader: atmosphereVertexShader,
             fragmentShader: atmosphereFragmentShader,
             side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
             transparent: true,
             uniforms: {
-                planetDist : {value : this.mesh.position.length()},
-                planetRadius: { value: this.size },
-                atmosphereRadius: { value: this.size * 1.25 }
+                atmosphereColor: { value: new THREE.Color(this.atmosphereColor) }
             }
         });
         

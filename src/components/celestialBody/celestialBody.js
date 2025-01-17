@@ -16,8 +16,8 @@ export class CelestialBody {
         let geometry;
 
         if (type === 'sphere') {
-            // geometry = new THREE.SphereGeometry(size, 12, 12);
-            geometry = createGoldbergPolyhedron(size, 3);
+            geometry = createGoldbergPolyhedron(size, 4, 0.05);
+            // geometry = new THREE.SphereGeometry(size, 32, 32);
             this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
         } else if (type === 'cube') {
             geometry = new THREE.BoxGeometry(size, size, size);

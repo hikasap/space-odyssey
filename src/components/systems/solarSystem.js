@@ -11,7 +11,7 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
     const HALF_SIZE = CHUNK_SIZE / 2;
 
     const starSize = getRandomNumber() * 20 + 50;
-    const starColor = 0xffff00 + getRandomNumber() * 0x0000cc;
+    const starColor = 0xffff00 + getRandomNumber() * 0x0000ff;
     const star = new Star(starSize, starColor);
     star.mesh.position.add(chunkOffset);
     scene.add(star.mesh);

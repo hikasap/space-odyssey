@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Perlin } from './perlin';
+import { threshold } from 'three/tsl';
 
 /**
  * Creates a Goldberg-like polyhedron from scratch by:
@@ -12,7 +13,7 @@ import { Perlin } from './perlin';
  * @param {number} roughness - How much to randomly displace each vertex radially.
  * @returns {THREE.BufferGeometry} A BufferGeometry representing the subdivided polyhedron.
  */
-export function createGoldbergPolyhedron(radius = 1, detail = 2, roughness = 0.05) {
+export function createGoldbergPolyhedron(radius = 1, detail = 1, roughness = 0.1) {
     
     const perlin = new Perlin();
 
@@ -120,7 +121,15 @@ export function createGoldbergPolyhedron(radius = 1, detail = 2, roughness = 0.0
   for (let i = 0; i < finalPositions.length; i++) {
     // random radial offset
     const noiseVal = perlin.noise(finalPositions[i].x, finalPositions[i].y, finalPositions[i].z);
-    const treshold = Math.floor(noiseVal * 10 / 7);
+    // console.log(noiseVal);
+    let mountain_threshold = 0.5;
+    let treshold = 0;
+    if(noiseVal > mountain_threshold){
+      treshold = 0.1 + noiseVal;
+    }
+    if (noiseVal < -mountain_threshold){
+      treshold = -0.1 + noiseVal;
+    }
     const offset = treshold * roughness;
     finalPositions[i].multiplyScalar(radius * (1 + offset));
     positionArray[3 * i + 0] = finalPositions[i].x;
