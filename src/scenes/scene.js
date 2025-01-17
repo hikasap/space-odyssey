@@ -76,6 +76,8 @@ export class SpaceScene{
 
         gameConfig.addEventListener('chunkSizeChanged', () => {
             this.regenerateSolarSystem();
+            this._scene.remove(this.chunkLine);
+            this.addChunkBorders();
         });
 
         gameConfig.addEventListener('starfieldDensityChanged', () => {

@@ -24,6 +24,10 @@ export class GameConfig {
             starfieldColor: 0xaaaaaa,
             ambientLightColor: 0xffffff,
             ambientLightIntensity: 0.25,
+            spacecraftMainEngineThrust: 500,
+            spacecraftSideEngineThrust: 25,
+            spacecraftBackEngineThrust: 1,
+            spacecraftRotationalFactor: 0.01,
         };
         this.initAll();
         this.gui = this.getDatGui();
@@ -86,7 +90,15 @@ export class GameConfig {
         lightFolder.addColor(config, 'ambientLightColor').name('Ambient Light Color');
         lightFolder.add(config, 'ambientLightIntensity', 0, 1).name('Ambient Light Intensity');
         
+        const spacecraftFolder = gui.addFolder('Spacecraft');
+        spacecraftFolder.add(config, 'spacecraftMainEngineThrust' , 1, 10000).name('Main Engine Thrust');
+        spacecraftFolder.add(config, 'spacecraftSideEngineThrust', 1, 1000).name('Side Engine Thrust');
+        spacecraftFolder.add(config, 'spacecraftBackEngineThrust', 0.1, 10).name('Back Engine Thrust');
+        spacecraftFolder.add(config, 'spacecraftRotationalFactor', 0.001, 0.1).name('Rotational Factor');
+
         gui.add(config, 'resetAll').name('Reset All');
+
+        
 
         return gui;
     }
@@ -261,7 +273,41 @@ export class GameConfig {
         this.dispatchEvent('ambientLightIntensityChanged', value);
     }
 
+    get spacecraftMainEngineThrust() {
+        return this._spacecraftMainEngineThrust;
+    }
 
+    set spacecraftMainEngineThrust(value) {
+        this._spacecraftMainEngineThrust = value;
+        this.dispatchEvent('spacecraftMainEngineThrustChanged', value);
+    }
+
+    get spacecraftSideEngineThrust() {
+        return this._spacecraftSideEngineThrust;
+    }
+
+    set spacecraftSideEngineThrust(value) {
+        this._spacecraftSideEngineThrust = value;
+        this.dispatchEvent('spacecraftSideEngineThrustChanged', value);
+    }
+
+    get spacecraftBackEngineThrust() {
+        return this._spacecraftBackEngineThrust;
+    }
+
+    set spacecraftBackEngineThrust(value) {
+        this._spacecraftBackEngineThrust = value;
+        this.dispatchEvent('spacecraftBackEngineThrustChanged', value);
+    }
+
+    get spacecraftRotationalFactor() {
+        return this._spacecraftRotationalFactor;
+    }
+
+    set spacecraftRotationalFactor(value) {
+        this._spacecraftRotationalFactor = value;
+        this.dispatchEvent('spacecraftRotationalFactorChanged', value);
+    }
 }
 
 GameConfig.instance = new GameConfig();

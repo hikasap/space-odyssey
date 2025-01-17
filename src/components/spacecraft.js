@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import PhysicsInstance from '../core/physics';
 import { BatchedRenderer, ColorOverLife, ColorRange, ConeEmitter, ConstantColor, ConstantValue, IntervalValue, ParticleSystem} from 'three.quarks';
+import { gameConfig } from '../systems/configs/gameConfig';
 
 export class Spacecraft {
     constructor(position, scene, onModelLoaded) {
@@ -159,10 +160,10 @@ export class Spacecraft {
     update(deltaTime) {
         if (!this.model) return;
     
-        const mainEngineForce = 500 * deltaTime;
-        const sideEngineForce = 25 * deltaTime;
-        const rotationalFactor = 0.01;
-        const backwardEngineForce = 0.5 * deltaTime;
+        const mainEngineForce = gameConfig.spacecraftMainEngineThrust * deltaTime;
+        const sideEngineForce = gameConfig.spacecraftSideEngineThrust * deltaTime;
+        const rotationalFactor = gameConfig.spacecraftRotationalFactor;
+        const backwardEngineForce = gameConfig.spacecraftBackEngineThrust * deltaTime;
 
         let force = 4 * sideEngineForce;
         if (this.keys['shift']) {
