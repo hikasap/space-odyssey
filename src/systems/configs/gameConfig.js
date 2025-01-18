@@ -119,7 +119,6 @@ export class GameConfig {
     }
 
     dispatchEvent(event, data) {
-        console.log('dispatching event', event, data);
         if (!this.listeners[event]) return;
         this.listeners[event].forEach(callback => {
             callback(data);

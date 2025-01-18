@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { Perlin } from './perlin';
-import { threshold } from 'three/tsl';
 
 /**
  * Creates a Goldberg-like polyhedron from scratch by:

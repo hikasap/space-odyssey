@@ -21,9 +21,6 @@ export class SpaceScene{
         this._celestialBodies = [];    
         this._camera = new Camera(gameConfig.cameraFov, window.innerWidth / window.innerHeight, gameConfig.cameraNear, gameConfig.cameraFar);
         this._camera.setOrbitControls(renderer.domElement);
-        
-        console.log(gameConfig);
-
         PhysicsInstance.init().then(() => {
             this.initScene();
         }).catch((error) => {

@@ -48,17 +48,32 @@ varying vec3 vPosition;
 varying vec3 vNormal;
 
 void main() {
-    // Calculate lighting based on normal and view direction
     vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-    float lighting = max(dot(vNormal, lightDir), 0.0);
+    vec3 normal = normalize(vNormal);
+    float lightIntensity = dot(normal, lightDir) * 1.0;
 
-    // Create a simple animated pattern
-    float pattern = sin(vPosition.y * 10.0 + time * 2.0) * 0.5 + 0.5;
+    // Create a wave pattern
+    float wave = sin(vPosition.x * 10.0 + time * 2.0) * 0.5 + 0.5;
+    wave += sin(vPosition.z * 10.0 + time * 2.5) * 0.5 + 0.5;
+    wave *= 0.5;
 
-    // Combine color with lighting and pattern
-    vec3 color = fluidColor * lighting * pattern;
+    // Create a ripple effect
+    float distance = length(vPosition.xy);
+    float ripple = sin(distance * 12.0 - time * 4.0) * 0.1;
 
-    gl_FragColor = vec4(color, 1.0);
+    // Combine wave and ripple effects
+    float pattern = wave + ripple;
+
+    // Adjust the fluid color based on the pattern
+    vec3 color = mix(fluidColor, fluidColor * 0.95, pattern);
+
+    // Add specular highlights
+    vec3 viewDir = normalize(-vPosition);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    vec3 specular = vec3(1.0) * spec * 0.5;
+
+    gl_FragColor = vec4(color + specular, 1.0);
 }
 `;
 
@@ -75,19 +90,16 @@ export class Planet extends CelestialBody {
         
         this.has_atmosphere = getRandomNumber() > 0.5;
         this.name = generateRandomName();
-        console.log("name", this.name);
         if (this.has_atmosphere) {
             this.addAtmosphere();
-            
+            this.has_fluid = getRandomNumber() > 0.5;
+            if (this.has_fluid) {
+                this.addFluid();
+            }            
         }
-
-        this.addFluid();
     }
 
     addFluid(){
-        // Initialize Clock for animation
-        this.clock = new THREE.Clock();
-
         // Assign a random fluid color
         this.fluidColor = new THREE.Color(Math.random(), Math.random(), Math.random());
 
@@ -101,9 +113,11 @@ export class Planet extends CelestialBody {
             },
             transparent: false,
             polygonOffset: true,
-            polygonOffsetFactor: 2,
-            polygonOffsetUnits: 2,
+            polygonOffsetFactor: 1,
+            polygonOffsetUnits: 1,
             side: THREE.FrontSide,
+            blending: THREE.AdditiveBlending
+
         });
 
         const fluidMesh = new THREE.Mesh(fluidGeometry, fluidMaterial);
@@ -117,7 +131,6 @@ export class Planet extends CelestialBody {
     addAtmosphere(){
         this.atmosphereThickness = getRandomNumber() * 0.5 + 1;
         this.atmosphereColor = getRandomNumber() * 0xffffff;
-        console.log(this.size * this.atmosphereThickness);
         const atmosphereGeo = new THREE.SphereGeometry(this.size * this.atmosphereThickness, 32, 32);
         const atmosphereMat = new THREE.ShaderMaterial({
             vertexShader: atmosphereVertexShader,
@@ -152,7 +165,8 @@ export class Planet extends CelestialBody {
             this.parentStar.mesh.position.z + z
         );
 
-        const delta = this.clock.getDelta();
-        this.fluidMesh.material.uniforms.time.value += delta * 10;
+        if (this.has_fluid) {
+            this.fluidMesh.material.uniforms.time.value += deltaTime;    
+        }
     }
 }
