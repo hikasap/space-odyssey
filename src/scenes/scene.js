@@ -21,9 +21,6 @@ export class SpaceScene{
         this._celestialBodies = [];    
         this._camera = new Camera(gameConfig.cameraFov, window.innerWidth / window.innerHeight, gameConfig.cameraNear, gameConfig.cameraFar);
         this._camera.setOrbitControls(renderer.domElement);
-        
-        console.log(gameConfig);
-
         PhysicsInstance.init().then(() => {
             this.initScene();
         }).catch((error) => {
@@ -50,8 +47,10 @@ export class SpaceScene{
         this._scene.add(ambientLight);
     
         this.addSolarSystem();
+        this.addChunkBorders();
         this.addBackground();
     
+
         this._composer = new EffectComposer(renderer);
         this._composer.addPass(new RenderPass(this._scene, this._camera));
         this._composer.addPass(new AfterimagePass(0.5));
@@ -74,8 +73,50 @@ export class SpaceScene{
 
         gameConfig.addEventListener('chunkSizeChanged', () => {
             this.regenerateSolarSystem();
+            this._scene.remove(this.chunkLine);
+            this.addChunkBorders();
         });
+
+        gameConfig.addEventListener('starfieldDensityChanged', () => {
+            this._scene.remove(this.stars);
+            this.addBackground();
+        });
+
+        gameConfig.addEventListener('starfieldColorChanged', () => {
+            this._scene.remove(this.stars);
+            this.addBackground();
+        }
+        );
+
+        gameConfig.addEventListener('displayChunkBordersChanged', () => {
+            if (gameConfig.displayChunkBorders) {
+                this._scene.add(this.chunkLine);
+            } else {
+                this._scene.remove(this.chunkLine);
+            }
+        }
+        );
+
+        gameConfig.addEventListener('displayStarfieldChanged', () => {
+            if (gameConfig.displayStarfield) {
+                this._scene.add(this.stars);
+            } else {
+                this._scene.remove(this.stars);
+            }
+        }
+        );
+
     }
+
+    addChunkBorders(){
+        const CHUNK_SIZE = gameConfig.chunkSize;
+        const chunkGeometry = new THREE.BoxGeometry(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
+        const chunkWireframe = new THREE.EdgesGeometry(chunkGeometry);
+        const chunkLine = new THREE.LineSegments(chunkWireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
+        this.chunkLine = chunkLine;
+        if (gameConfig.displayChunkBorders) this._scene.add(chunkLine);
+    }
+
 
     onWindowResize() {
         const width = window.innerWidth;
@@ -107,8 +148,6 @@ export class SpaceScene{
 
 
     regenerateSolarSystem(){
-        setSeed(gameConfig.solarSystemSeed.toString());
-        resetRandom();
         // Clear all
         for (const celestialBody of this._celestialBodies) {
             this._scene.remove(celestialBody.mesh);
@@ -118,7 +157,9 @@ export class SpaceScene{
         this.addSolarSystem();
     }
     
-        addSolarSystem(){
+    addSolarSystem(){
+        setSeed(gameConfig.solarSystemSeed.toString());
+        resetRandom();
         const x_range = [0];
         const y_range = [0];
         const z_range = [0];
@@ -127,6 +168,7 @@ export class SpaceScene{
                 for (const z of z_range) {
                     const chunkOffset = new THREE.Vector3(x * gameConfig.chunkSize, y * gameConfig.chunkSize, z * gameConfig.chunkSize);
                     generateSolarSystem(this._scene, this._celestialBodies, chunkOffset, gameConfig.chunkSize);
+                    
                 }
             }
         }
@@ -158,8 +200,8 @@ export class SpaceScene{
             starVertices.push(point.x, point.y, point.z);
         }
         starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-        const stars = new THREE.Points(starGeometry, starMaterial);
-        this._scene.add(stars);
+        this.stars = new THREE.Points(starGeometry, starMaterial);
+        if (gameConfig.displayStarfield) this._scene.add(this.stars);
     }
 
     displayScene(container){

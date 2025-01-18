@@ -26,9 +26,7 @@ class Camera extends THREE.PerspectiveCamera {
             this.far = gameConfig.cameraFar;
             this.updateProjectionMatrix();
         });
-
     }
-
     
     setOrbitalTarget(object) {
         this.orbitalTarget = object;

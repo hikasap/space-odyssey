@@ -6,22 +6,28 @@ export class GameConfig {
     constructor() {
         this.listeners = {};
         this._defaultValues = {
-            chunkSize: 256,
+            chunkSize: 2048,
             speedMultiplier: 1.0,
-            solarSystemSeed: 0,
+            solarSystemSeed: 61,
             displayStarfield: true,
             displayChunkBorders: false,
             displayOrbits: true,
             afterimagePassDamp: 0.5,
             cameraFov: 75,
             cameraNear: 0.01,
-            cameraFar: 1024,
-            cameraLerpSpeed: 0.06,
+            cameraFar: 2048 * 4,
+            cameraLerpSpeed: 0.2,
             cameraFollowOffsetX : 0,
             cameraFollowOffsetY : 0.1,
             cameraFollowOffsetZ : -0.2,
             starfieldDensity: 10000,
-            starfieldColor: 0xaaaaaa
+            starfieldColor: 0xaaaaaa,
+            ambientLightColor: 0xffffff,
+            ambientLightIntensity: 0.05,
+            spacecraftMainEngineThrust: 500,
+            spacecraftSideEngineThrust: 25,
+            spacecraftBackEngineThrust: 1,
+            spacecraftRotationalFactor: 0.01,
         };
         this.initAll();
         this.gui = this.getDatGui();
@@ -42,8 +48,6 @@ export class GameConfig {
         }
     }
 
-    /* Refresh all folders 
-    */
     updateGui() {
         const folderNames = Object.keys(this.gui.__folders);
         folderNames.forEach(folderName => {
@@ -58,8 +62,8 @@ export class GameConfig {
         const gui = new dat.GUI();
         const config = this;
         const generalFolder = gui.addFolder('General');
-        generalFolder.add(config, 'chunkSize', 128, 1024).name('Chunk Size');
-        generalFolder.add(config, 'speedMultiplier', 0.25, 5, 0.25).name('Speed Multiplier');
+        generalFolder.add(config, 'chunkSize', 128, 2048).name('Chunk Size');
+        generalFolder.add(config, 'speedMultiplier', 0.25, 500, 0.25).name('Speed Multiplier');
         generalFolder.add(config, 'solarSystemSeed', 0, 1000).name('Solar System Seed');
 
         const displayFolder = gui.addFolder('Display');
@@ -71,7 +75,7 @@ export class GameConfig {
         const cameraFolder = gui.addFolder('Camera');
         cameraFolder.add(config, 'cameraFov', 30, 120).name('Camera FOV');
         cameraFolder.add(config, 'cameraNear', 0.01, 1, 0.01).name('Camera Near');
-        cameraFolder.add(config, 'cameraFar', 512, 2048).name('Camera Far');
+        cameraFolder.add(config, 'cameraFar', 512, 16384).name('Camera Far');
         cameraFolder.add(config, 'cameraLerpSpeed', 0.01, 1).name('Camera Lerp Speed');
         cameraFolder.add(config, 'cameraFollowOffsetX', -1.0, 1.0, 0.01).name('Camera Follow Offset X');
         cameraFolder.add(config, 'cameraFollowOffsetY', -1.0, 1.0, 0.01).name('Camera Follow Offset Y');
@@ -82,7 +86,19 @@ export class GameConfig {
         starfieldFolder.add(config, 'starfieldDensity', 1000, 50000).name('Starfield Density');
         starfieldFolder.addColor(config, 'starfieldColor').name('Starfield Color');
 
+        const lightFolder = gui.addFolder('Light');
+        lightFolder.addColor(config, 'ambientLightColor').name('Ambient Light Color');
+        lightFolder.add(config, 'ambientLightIntensity', 0, 1).name('Ambient Light Intensity');
+        
+        const spacecraftFolder = gui.addFolder('Spacecraft');
+        spacecraftFolder.add(config, 'spacecraftMainEngineThrust' , 1, 10000).name('Main Engine Thrust');
+        spacecraftFolder.add(config, 'spacecraftSideEngineThrust', 1, 1000).name('Side Engine Thrust');
+        spacecraftFolder.add(config, 'spacecraftBackEngineThrust', 0.1, 10).name('Back Engine Thrust');
+        spacecraftFolder.add(config, 'spacecraftRotationalFactor', 0.001, 0.1).name('Rotational Factor');
+
         gui.add(config, 'resetAll').name('Reset All');
+
+        
 
         return gui;
     }
@@ -103,7 +119,6 @@ export class GameConfig {
     }
 
     dispatchEvent(event, data) {
-        console.log('dispatching event', event, data);
         if (!this.listeners[event]) return;
         this.listeners[event].forEach(callback => {
             callback(data);
@@ -239,6 +254,59 @@ export class GameConfig {
         this.dispatchEvent('cameraLerpSpeedChanged', value);
     }
 
+    get ambientLightColor() {
+        return this._ambientLightColor;
+    }
+
+    set ambientLightColor(value) {
+        this._ambientLightColor = value;
+        this.dispatchEvent('ambientLightColorChanged', value);
+    }
+
+    get ambientLightIntensity() {
+        return this._ambientLightIntensity;
+    }
+
+    set ambientLightIntensity(value) {
+        this._ambientLightIntensity = value;
+        this.dispatchEvent('ambientLightIntensityChanged', value);
+    }
+
+    get spacecraftMainEngineThrust() {
+        return this._spacecraftMainEngineThrust;
+    }
+
+    set spacecraftMainEngineThrust(value) {
+        this._spacecraftMainEngineThrust = value;
+        this.dispatchEvent('spacecraftMainEngineThrustChanged', value);
+    }
+
+    get spacecraftSideEngineThrust() {
+        return this._spacecraftSideEngineThrust;
+    }
+
+    set spacecraftSideEngineThrust(value) {
+        this._spacecraftSideEngineThrust = value;
+        this.dispatchEvent('spacecraftSideEngineThrustChanged', value);
+    }
+
+    get spacecraftBackEngineThrust() {
+        return this._spacecraftBackEngineThrust;
+    }
+
+    set spacecraftBackEngineThrust(value) {
+        this._spacecraftBackEngineThrust = value;
+        this.dispatchEvent('spacecraftBackEngineThrustChanged', value);
+    }
+
+    get spacecraftRotationalFactor() {
+        return this._spacecraftRotationalFactor;
+    }
+
+    set spacecraftRotationalFactor(value) {
+        this._spacecraftRotationalFactor = value;
+        this.dispatchEvent('spacecraftRotationalFactorChanged', value);
+    }
 }
 
 GameConfig.instance = new GameConfig();

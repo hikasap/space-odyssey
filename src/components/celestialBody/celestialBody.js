@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { getRandomNumber } from '../../utils/random';
+import { createGoldbergPolyhedron } from '../../utils/goldbergPolygedron';
 
 export class CelestialBody {
     constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = 'assets/textures/a_albedo.png') {
@@ -12,16 +13,31 @@ export class CelestialBody {
         const textureLoader = new THREE.TextureLoader();
         const texture = textureLoader.load(texturePath);
 
-        let geometry;
-        if (type === 'sphere') {
-            geometry = new THREE.SphereGeometry(size, 12, 12);
-            this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
-        } else if (type === 'cube') {
-            geometry = new THREE.BoxGeometry(size, size, size);
+        this.geometry = null;
+
+        if (type === 'goldberg') {
+            const detail = 5;
+            const roughness = getRandomNumber() * 0.25 + 0.1;
+            const stepSize = getRandomNumber() * 0.25 + 0.1;
+            const noisePower = 2 * Math.floor(getRandomNumber() * 3) + 1;
+            this.geometry = createGoldbergPolyhedron(size, detail, roughness, stepSize, noisePower);
             this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
         }
+        else if (type === 'sphere') {
+            this.geometry = new THREE.SphereGeometry(size, 16,16);
+            this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
+        } else if (type === 'cube') {
+            this.geometry = new THREE.BoxGeometry(size, size, size);
+            this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
+        }
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
 
-        this.mesh = new THREE.Mesh(geometry, this.material);
+        // Skeleton wireframe
+        const wireframe = new THREE.WireframeGeometry(this.geometry);
+        const line = new THREE.LineSegments(wireframe);
+        line.material.opacity = 0.05;
+        line.material.transparent = true;
+        this.mesh.add(line);
     }
 
     rotate(deltaTime) {

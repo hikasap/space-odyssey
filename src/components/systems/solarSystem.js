@@ -10,14 +10,8 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
     const CHUNK_SIZE = chunkSize;
     const HALF_SIZE = CHUNK_SIZE / 2;
 
-    const chunkGeometry = new THREE.BoxGeometry(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE);
-    const chunkWireframe = new THREE.EdgesGeometry(chunkGeometry);
-    const chunkLine = new THREE.LineSegments(chunkWireframe, new THREE.LineBasicMaterial({ color: 0xffffff }));
-    chunkLine.position.copy(chunkOffset);
-    scene.add(chunkLine);
-
-    const starSize = getRandomNumber() * 5 + 10;
-    const starColor = 0xffff00 + getRandomNumber() * 0x0000cc;
+    const starSize = getRandomNumber() * 20 + 50;
+    const starColor = 0xffff00 + getRandomNumber() * 0x0000ff;
     const star = new Star(starSize, starColor);
     star.mesh.position.add(chunkOffset);
     scene.add(star.mesh);
@@ -25,7 +19,7 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
 
     const numPlanets = Math.floor(getRandomNumber() * 5) + 3;
     for (let i = 0; i < numPlanets; i++) {
-        const planetSize = getRandomNumber() * 5 + 2;
+        const planetSize = getRandomNumber() * 10 + 10;
         const planetColor = getRandomNumber() * 0xffffff;
         const maxSemiMajorAxis = HALF_SIZE - planetSize - starSize * 2;
         const semiMajorAxis = planetSize + starSize * 2 +  getRandomNumber() * maxSemiMajorAxis;
@@ -43,9 +37,9 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
 
         const numMoons = Math.floor(getRandomNumber() * 3);
         for (let j = 0; j < numMoons; j++) {
-            const moonSize = getRandomNumber() * 0.8 + 0.2;
+            const moonSize = getRandomNumber() * 0.8 + 1;
             const moonColor = getRandomNumber() * 0xffffff;
-            const moonSemiMajorAxis = planetSize + moonSize + getRandomNumber() * 2;
+            const moonSemiMajorAxis = 2 * (planetSize + moonSize) + getRandomNumber() * 2;
             const moonEccentricity = getRandomNumber() * 0.2;
             const moonOrbitalPeriod = (orbitalPeriod / 2) + getRandomNumber() * (orbitalPeriod / 2);
             const moon = new Moon(moonSize, moonColor, moonSemiMajorAxis, moonEccentricity, moonOrbitalPeriod, planet);
