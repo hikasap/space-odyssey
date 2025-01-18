@@ -16,7 +16,7 @@ export class GameConfig {
             cameraFov: 75,
             cameraNear: 0.01,
             cameraFar: 2048 * 4,
-            cameraLerpSpeed: 0.2,
+            cameraLerpSpeed: 0.3,
             cameraFollowOffsetX : 0,
             cameraFollowOffsetY : 0.1,
             cameraFollowOffsetZ : -0.2,
@@ -24,10 +24,10 @@ export class GameConfig {
             starfieldColor: 0xaaaaaa,
             ambientLightColor: 0xffffff,
             ambientLightIntensity: 0.05,
-            spacecraftMainEngineThrust: 500,
-            spacecraftSideEngineThrust: 25,
+            spacecraftMainEngineThrust: 2500,
+            spacecraftSideEngineThrust: 200,
             spacecraftBackEngineThrust: 1,
-            spacecraftRotationalFactor: 0.01,
+            spacecraftRotationalFactor: 0.002,
         };
         this.initAll();
         this.gui = this.getDatGui();
@@ -94,7 +94,7 @@ export class GameConfig {
         spacecraftFolder.add(config, 'spacecraftMainEngineThrust' , 1, 10000).name('Main Engine Thrust');
         spacecraftFolder.add(config, 'spacecraftSideEngineThrust', 1, 1000).name('Side Engine Thrust');
         spacecraftFolder.add(config, 'spacecraftBackEngineThrust', 0.1, 10).name('Back Engine Thrust');
-        spacecraftFolder.add(config, 'spacecraftRotationalFactor', 0.001, 0.1).name('Rotational Factor');
+        spacecraftFolder.add(config, 'spacecraftRotationalFactor', 0.001, 0.01).name('Rotational Factor');
 
         gui.add(config, 'resetAll').name('Reset All');
 
