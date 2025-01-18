@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getRandomNumber } from '../../utils/random';
 import { createGoldbergPolyhedron } from '../../utils/goldbergPolygedron';
+import { generateRandomName } from '../../utils/nameGenerator';
 
 export class CelestialBody {
     constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = 'assets/textures/a_albedo.png') {
@@ -9,6 +10,7 @@ export class CelestialBody {
         this.type = type;
         this.rotationSpeedX = (getRandomNumber() - 0.5) * 0.2;
         this.rotationSpeedY = (getRandomNumber() - 0.5) * 0.2;
+        this.name = generateRandomName();
 
         const textureLoader = new THREE.TextureLoader();
         const texture = textureLoader.load(texturePath);

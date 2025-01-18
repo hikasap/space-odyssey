@@ -2,7 +2,7 @@ import Camera from '../core/camera.js';
 import renderer from '../core/renderer.js';
 import { ambientLight } from '../core/light.js';
 import { generateSolarSystem } from '../components/systems/solarSystem.js';
-import { setupInteraction } from '../components/systems/interaction.js';
+import { setupInteraction, getIntersectedObject } from '../components/systems/interaction.js';
 import { Planet } from '../components/celestialBody/planet.js';
 import { Moon } from '../components/celestialBody/moon.js';
 import * as THREE from 'three';
@@ -207,6 +207,14 @@ export class SpaceScene{
     displayScene(container){
         container.appendChild(renderer.domElement);
     }            
+
+    getTargetPlanet(){
+        const INTERSECTED = getIntersectedObject();
+        if (INTERSECTED && INTERSECTED instanceof Planet) {
+            return INTERSECTED;
+        }
+        return null;
+    }
 } 
 
 export default SpaceScene;

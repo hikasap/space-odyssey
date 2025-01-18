@@ -4,6 +4,7 @@
   import SpaceScene from './scenes/scene.js';
   import { setSeed } from './utils/random.js';
   import { gameConfig } from './systems/configs/gameConfig';
+  import CelestialDetailsHud from './ui/components/celestialDetailsHUD.svelte';
 
   let spaceScane = new SpaceScene();
   let container;
@@ -33,6 +34,8 @@
 
 <!-- Three.js Scene Container -->
 <div bind:this={container} style="width: 100%; height: 100vh;"></div>
+
+<CelestialDetailsHud scene={spaceScane} />
 
 <style>
   :global(body) {

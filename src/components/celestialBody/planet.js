@@ -112,18 +112,12 @@ export class Planet extends CelestialBody {
                 fluidColor: { value: this.fluidColor }
             },
             transparent: false,
-            polygonOffset: true,
-            polygonOffsetFactor: 1,
-            polygonOffsetUnits: 1,
             side: THREE.FrontSide,
             blending: THREE.AdditiveBlending
-
         });
 
         const fluidMesh = new THREE.Mesh(fluidGeometry, fluidMaterial);
-        this.fluidMesh = fluidMesh;
-        // Make the fluid mesh is not less priority than the planet mesh
-        this.fluidMesh.renderOrder = 1;
+        this.fluidMesh = fluidMesh;        
         
         this.mesh.add(this.fluidMesh);
     }
