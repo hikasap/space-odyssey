@@ -8,8 +8,8 @@ export class CelestialBody {
         this.size = size;
         this.color = color;
         this.type = type;
-        this.rotationSpeedX = (getRandomNumber() - 0.5) * 0.2;
-        this.rotationSpeedY = (getRandomNumber() - 0.5) * 0.2;
+        this.rotationSpeedX = (getRandomNumber() - 0.5) * 0.01;
+        this.rotationSpeedY = (getRandomNumber() - 0.5) * 0.01;
         this.name = generateRandomName();
 
         const textureLoader = new THREE.TextureLoader();

@@ -26,7 +26,7 @@ export class GameConfig {
             ambientLightIntensity: 0.05,
             spacecraftMainEngineThrust: 2500,
             spacecraftSideEngineThrust: 200,
-            spacecraftBackEngineThrust: 1,
+            spacecraftBackEngineThrust: 5,
             spacecraftRotationalFactor: 0.002,
         };
         this.initAll();

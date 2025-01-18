@@ -27,7 +27,7 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
 
         // Use a simplified Kepler-like law for orbital period:
         // T ~ sqrt(a^3), adjusting with a multiplier to control final speed scale
-        const basePeriod = 20; // tweak as you see fit for overall speed
+        const basePeriod = 300; // tweak as you see fit for overall speed
         const orbitalPeriod = basePeriod * Math.sqrt(Math.pow(semiMajorAxis, 3) / 10000);
 
 
@@ -41,7 +41,7 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
             const moonColor = getRandomNumber() * 0xffffff;
             const moonSemiMajorAxis = 2 * (planetSize + moonSize) + getRandomNumber() * 2;
             const moonEccentricity = getRandomNumber() * 0.2;
-            const moonOrbitalPeriod = (orbitalPeriod / 2) + getRandomNumber() * (orbitalPeriod / 2);
+            const moonOrbitalPeriod = (orbitalPeriod / 40) + getRandomNumber() * (orbitalPeriod / 40);
             const moon = new Moon(moonSize, moonColor, moonSemiMajorAxis, moonEccentricity, moonOrbitalPeriod, planet);
             scene.add(moon.mesh);
             celestialBodies.push(moon);
