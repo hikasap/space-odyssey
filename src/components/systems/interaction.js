@@ -16,7 +16,7 @@ export function setupInteraction(scene) {
     function onClick(event) {
         event.preventDefault();
         if (event.shiftKey && INTERSECTED) {
-            scene.camera.focusOnObject(INTERSECTED);
+            scene.camera.focusOnObject(INTERSECTED.mesh);
         }
     }
 
@@ -26,21 +26,36 @@ export function setupInteraction(scene) {
         }
     }
 
+    function setIntersectedObject(object) {
+    
+        if (!object) {
+            if (INTERSECTED) INTERSECTED.mesh.material.emissive.setHex(INTERSECTED.mesh.currentHex);
+            INTERSECTED = null;
+            return;
+        }
+
+        if (INTERSECTED !== object) {
+            if (INTERSECTED) INTERSECTED.mesh.material.emissive.setHex(INTERSECTED.mesh.currentHex);
+            INTERSECTED = object;
+            INTERSECTED.mesh.currentHex = INTERSECTED.mesh.material.emissive.getHex();
+            INTERSECTED.mesh.material.emissive.setHex(0xff0000);
+        }
+    }
+
     function detectRaycast() {
         if (mouseMoved) {
             raycaster.setFromCamera(mouse, scene.camera);
             const intersects = raycaster.intersectObjects(scene.celestialBodies.map(body => body.mesh)).filter(intersect => intersect.object.material && intersect.object.material.emissive);
 
-            if (intersects.length > 0) {
-                if (INTERSECTED != intersects[0].object) {
-                    if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-                    INTERSECTED = intersects[0].object;
-                    INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-                    INTERSECTED.material.emissive.setHex(0xff0000);
-                }
-            } else {
-                if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-                INTERSECTED = null;
+            if (intersects.length > 0) {                
+                scene.celestialBodies.forEach(body => {
+                    if (body.mesh === intersects[0].object) {
+                        setIntersectedObject(body);
+                    }
+                });
+            }
+            else {
+                setIntersectedObject(null);
             }
         }
     }
@@ -50,4 +65,8 @@ export function setupInteraction(scene) {
     window.addEventListener('keypress', onKeyPress, false);
 
     return detectRaycast;
+}
+
+export function getIntersectedObject() {
+    return INTERSECTED;
 }
