@@ -101,7 +101,7 @@ export class Planet extends CelestialBody {
 
     addFluid(){
         // Assign a random fluid color
-        this.fluidColor = new THREE.Color(Math.random(), Math.random(), Math.random());
+        this.fluidColor = new THREE.Color(getRandomNumber(), getRandomNumber(), getRandomNumber());
 
         const fluidGeometry = new THREE.SphereGeometry(this.size * 0.99, 32, 32);
         const fluidMaterial = new THREE.ShaderMaterial({
