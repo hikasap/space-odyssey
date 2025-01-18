@@ -14,7 +14,7 @@ export class GameConfig {
             displayOrbits: true,
             afterimagePassDamp: 0.5,
             cameraFov: 75,
-            cameraNear: 0.01,
+            cameraNear: 0.1,
             cameraFar: 2048 * 4,
             cameraLerpSpeed: 0.3,
             cameraFollowOffsetX : 0,
@@ -63,7 +63,7 @@ export class GameConfig {
         const config = this;
         const generalFolder = gui.addFolder('General');
         generalFolder.add(config, 'chunkSize', 128, 2048).name('Chunk Size');
-        generalFolder.add(config, 'speedMultiplier', 0.25, 500, 0.25).name('Speed Multiplier');
+        generalFolder.add(config, 'speedMultiplier', 0, 500, 0.25).name('Speed Multiplier');
         generalFolder.add(config, 'solarSystemSeed', 0, 1000).name('Solar System Seed');
 
         const displayFolder = gui.addFolder('Display');

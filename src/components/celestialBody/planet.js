@@ -89,7 +89,6 @@ export class Planet extends CelestialBody {
         this.parentStar = parentStar;
         
         this.has_atmosphere = getRandomNumber() > 0.5;
-        this.name = generateRandomName();
         if (this.has_atmosphere) {
             this.addAtmosphere();
             this.has_fluid = getRandomNumber() > 0.5;
@@ -111,13 +110,17 @@ export class Planet extends CelestialBody {
                 time: { value: 0.0 },
                 fluidColor: { value: this.fluidColor }
             },
+            polygonOffset: true,
+            polygonOffsetFactor: 1,
+            polygonOffsetUnits: 1,
             transparent: false,
             side: THREE.FrontSide,
             blending: THREE.AdditiveBlending
         });
 
         const fluidMesh = new THREE.Mesh(fluidGeometry, fluidMaterial);
-        this.fluidMesh = fluidMesh;        
+        this.fluidMesh = fluidMesh;    
+            
         
         this.mesh.add(this.fluidMesh);
     }
