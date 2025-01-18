@@ -23,7 +23,7 @@ export class GameConfig {
             starfieldDensity: 10000,
             starfieldColor: 0xaaaaaa,
             ambientLightColor: 0xffffff,
-            ambientLightIntensity: 0.25,
+            ambientLightIntensity: 0.05,
             spacecraftMainEngineThrust: 500,
             spacecraftSideEngineThrust: 25,
             spacecraftBackEngineThrust: 1,

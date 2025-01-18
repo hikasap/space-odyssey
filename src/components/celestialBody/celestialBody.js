@@ -13,18 +13,31 @@ export class CelestialBody {
         const textureLoader = new THREE.TextureLoader();
         const texture = textureLoader.load(texturePath);
 
-        let geometry;
+        this.geometry = null;
 
-        if (type === 'sphere') {
-            geometry = createGoldbergPolyhedron(size, 4, 0.05);
-            // geometry = new THREE.SphereGeometry(size, 32, 32);
-            this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
-        } else if (type === 'cube') {
-            geometry = new THREE.BoxGeometry(size, size, size);
+        if (type === 'goldberg') {
+            const detail = 5;
+            const roughness = getRandomNumber() * 0.25 + 0.1;
+            const stepSize = getRandomNumber() * 0.25 + 0.1;
+            const noisePower = 2 * Math.floor(getRandomNumber() * 3) + 1;
+            this.geometry = createGoldbergPolyhedron(size, detail, roughness, stepSize, noisePower);
             this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
         }
+        else if (type === 'sphere') {
+            this.geometry = new THREE.SphereGeometry(size, 16,16);
+            this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
+        } else if (type === 'cube') {
+            this.geometry = new THREE.BoxGeometry(size, size, size);
+            this.material = new THREE.MeshStandardMaterial({ map: texture, color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
+        }
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
 
-        this.mesh = new THREE.Mesh(geometry, this.material);
+        // Skeleton wireframe
+        const wireframe = new THREE.WireframeGeometry(this.geometry);
+        const line = new THREE.LineSegments(wireframe);
+        line.material.opacity = 0.05;
+        line.material.transparent = true;
+        this.mesh.add(line);
     }
 
     rotate(deltaTime) {
