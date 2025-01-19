@@ -7,7 +7,6 @@ let _rng = seedrandom(_seed);
  * Allows switching or editing the seed at runtime with an integer
  * @param {string} seed
  * @returns {void}
- * @example
  */
 export function setSeed(seed) {
     _rng = seedrandom(seed);
@@ -17,7 +16,6 @@ export function setSeed(seed) {
 /*
 * Returns a random number between 0 and 1
 * @returns {number}
-* @example
 */
 export function getRandomNumber() {
     return _rng.quick();
@@ -29,7 +27,6 @@ export function getRandomNumber() {
 * returned for a certain procedure. Call this
 * before starting a new procedure.
 * @returns {void}
-* @example
 */
 export function resetRandom() {
     _rng = seedrandom(_seed);
