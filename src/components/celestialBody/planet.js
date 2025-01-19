@@ -77,7 +77,6 @@ void main() {
 }
 `;
 
-
 export class Planet extends CelestialBody {
     constructor(size, color, semiMajorAxis, eccentricity, orbitalPeriod, parentStar) {
         super(size, color, 'goldberg');
@@ -89,13 +88,18 @@ export class Planet extends CelestialBody {
         this.parentStar = parentStar;
         
         this.has_atmosphere = getRandomNumber() > 0.5;
+        this.has_fluid = false;
+
         if (this.has_atmosphere) {
             this.addAtmosphere();
             this.has_fluid = getRandomNumber() > 0.5;
-            if (this.has_fluid) {
-                this.addFluid();
-            }            
         }
+
+        if (this.has_fluid) {
+            this.addFluid();
+        }            
+
+        this.initCelesitalDetails();
     }
 
     addFluid(){
@@ -127,7 +131,7 @@ export class Planet extends CelestialBody {
 
     addAtmosphere(){
         this.atmosphereThickness = getRandomNumber() * 0.5 + 1;
-        this.atmosphereColor = getRandomNumber() * 0xffffff;
+        this.atmosphereColor =  new THREE.Color(getRandomNumber() * 0xffffff);
         const atmosphereGeo = new THREE.SphereGeometry(this.size * this.atmosphereThickness, 32, 32);
         const atmosphereMat = new THREE.ShaderMaterial({
             vertexShader: atmosphereVertexShader,
@@ -136,7 +140,7 @@ export class Planet extends CelestialBody {
             blending: THREE.AdditiveBlending,
             transparent: true,
             uniforms: {
-                atmosphereColor: { value: new THREE.Color(this.atmosphereColor) }
+                atmosphereColor: { value: this.atmosphereColor}
             }
         });
         
@@ -164,6 +168,26 @@ export class Planet extends CelestialBody {
 
         if (this.has_fluid) {
             this.fluidMesh.material.uniforms.time.value += deltaTime;    
+        }
+    }
+
+    initCelesitalDetails() {
+        super.initCelesitalDetails();
+        this.celestialDetails['Type'] = 'Planet';
+        this.celestialDetails['Parent Star'] = this.parentStar.celestialDetails['Name'];
+        this.celestialDetails['Semi Major Axis'] = this.semiMajorAxis;
+        this.celestialDetails['Eccentricity'] = this.eccentricity;
+        this.celestialDetails['Orbital Period'] = this.orbitalPeriod;
+        this.celestialDetails['Orbital Angle'] = this.orbitalAngle;
+        this.celestialDetails['Inclination'] = this.inclination;
+        this.celestialDetails['Has Atmosphere'] = this.has_atmosphere;
+        this.celestialDetails['Has Fluid'] = this.has_fluid;
+        if (this.has_atmosphere) {
+            this.celestialDetails['Atmosphere Thickness'] = this.atmosphereThickness;
+            this.celestialDetails['Atmosphere Color'] = this.atmosphereColor.getHexString();
+        }
+        if (this.has_fluid){
+            this.celestialDetails['Fluid Color'] = this.fluidColor.getHexString();
         }
     }
 }

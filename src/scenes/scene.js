@@ -13,6 +13,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
 import { getRandomNumber, resetRandom, setSeed } from '../utils/random.js';
 import { gameConfig } from '../systems/configs/gameConfig.js';
+import { CelestialBody } from '../components/celestialBody/celestialBody.js';
 
 export class SpaceScene{
     constructor(){
@@ -208,9 +209,9 @@ export class SpaceScene{
         container.appendChild(renderer.domElement);
     }            
 
-    getTargetPlanet(){
+    getTargetCelestial(){
         const INTERSECTED = getIntersectedObject();
-        if (INTERSECTED && INTERSECTED instanceof Planet) {
+        if (INTERSECTED && INTERSECTED instanceof CelestialBody) {
             return INTERSECTED;
         }
         return null;

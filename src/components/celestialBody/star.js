@@ -11,5 +11,12 @@ export class Star extends CelestialBody {
         this.light = new THREE.PointLight(color, 1000000, 0, 2);
         this.light.position.set(0, 0, 0);
         this.mesh.add(this.light);
+
+        this.initCelesitalDetails();
+    }
+
+    initCelesitalDetails() {
+        super.initCelesitalDetails();
+        this.celestialDetails['Type'] = 'Star';
     }
 }

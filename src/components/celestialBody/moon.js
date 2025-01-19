@@ -10,6 +10,8 @@ export class Moon extends CelestialBody {
         this.orbitalAngle = getRandomNumber() * Math.PI * 2;
         this.inclination = getRandomNumber() * Math.PI * 2; 
         this.parentPlanet = parentPlanet; 
+        
+        this.initCelesitalDetails();
     }
 
     updateOrbit(deltaTime) {
@@ -29,5 +31,11 @@ export class Moon extends CelestialBody {
             this.parentPlanet.mesh.position.y + y * Math.cos(this.inclination),
             this.parentPlanet.mesh.position.z + z
         );
+    }
+
+    initCelesitalDetails() {
+        super.initCelesitalDetails();
+        this.celestialDetails['Type'] = 'Moon';
+        this.celestialDetails['Parent Planet'] = this.parentPlanet.celestialDetails['Name'];
     }
 }

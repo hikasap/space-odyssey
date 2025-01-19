@@ -63,7 +63,7 @@ export class GameConfig {
         const config = this;
         const generalFolder = gui.addFolder('General');
         generalFolder.add(config, 'chunkSize', 128, 2048).name('Chunk Size');
-        generalFolder.add(config, 'speedMultiplier', 0, 500, 0.25).name('Speed Multiplier');
+        generalFolder.add(config, 'speedMultiplier', 0, 10000, 0.25).name('Speed Multiplier');
         generalFolder.add(config, 'solarSystemSeed', 0, 1000).name('Solar System Seed');
 
         const displayFolder = gui.addFolder('Display');
