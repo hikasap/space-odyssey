@@ -1,29 +1,21 @@
 <script>
-  import Slider from './ui/components/slider.svelte';
   import { onMount } from 'svelte';
   import SpaceScene from './scenes/scene.js';
-  import { setSeed } from './utils/random.js';
-  import { gameConfig } from './systems/configs/gameConfig';
   import CelestialDetailsHud from './ui/components/celestialDetailsHUD.svelte';
   import FuelIndicator from './ui/components/fuelIndicator.svelte';
-  import { Spacecraft } from './components/spacecraft';
 
   let spaceScane = new SpaceScene();
-  let container;
-  let speedMultiplier = 1;
-  let seed = 0;
   let spacecraft = null;
-  
+  let container;
+
   onMount(() => {
     spaceScane.displayScene(container);
-
     const interval = setInterval(update, 100);
     return () => clearInterval(interval);
   });
 
   function update() {
     spacecraft = spaceScane._spacecraft;
-    // console.log(spacecraft);
   }
 
 </script>

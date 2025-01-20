@@ -6,7 +6,7 @@ import { setupInteraction, getIntersectedObject } from '../components/systems/in
 import { Planet } from '../components/celestialBody/planet.js';
 import { Moon } from '../components/celestialBody/moon.js';
 import * as THREE from 'three';
-import { Spacecraft } from '../components/spacecraft.js';
+import { Spacecraft } from '../components/spacecraft/spacecraft.js';
 import PhysicsInstance from '../core/physics.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';

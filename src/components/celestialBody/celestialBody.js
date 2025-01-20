@@ -47,11 +47,11 @@ export class CelestialBody {
         this.mass = this.size * this.size * this.size * this.density;
         // The radius where the planet starts to pull objects towards it
         this.pullRadius = Math.cbrt(this.mass);
-        // Draw a debug sphere to show the pull radius
-        const pullGeometry = new THREE.SphereGeometry(this.pullRadius, 64, 64);
-        const pullMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true , opacity: 0.025, transparent: true });
-        const pullMesh = new THREE.Mesh(pullGeometry, pullMaterial);
-        this.mesh.add(pullMesh);
+        // // Draw a debug sphere to show the pull radius
+        // const pullGeometry = new THREE.SphereGeometry(this.pullRadius, 64, 64);
+        // const pullMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true , opacity: 0.025, transparent: true });
+        // const pullMesh = new THREE.Mesh(pullGeometry, pullMaterial);
+        // this.mesh.add(pullMesh);
 
     }
 

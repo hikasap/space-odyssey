@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import PhysicsInstance from '../core/physics';
+import PhysicsInstance from '../../core/physics';
 import { BatchedRenderer, ColorOverLife, ColorRange, ConeEmitter, ConstantColor, ConstantValue, IntervalValue, ParticleSystem} from 'three.quarks';
-import { gameConfig } from '../systems/configs/gameConfig';
+import { gameConfig } from '../../systems/configs/gameConfig';
 import { FuelManager } from './fuelManager';
 
 export class Spacecraft {
@@ -227,7 +227,6 @@ export class Spacecraft {
         this.batchSystem.update(deltaTime);
 
         this.fuelManager.refuel(0.01 * deltaTime);
-
     }
 
     refuel(amount) {

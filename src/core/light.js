@@ -8,11 +8,9 @@ const ambientLight = new THREE.AmbientLight(gameConfig.ambientLightColor, gameCo
 
 gameConfig.addEventListener('ambientLightColorChanged', (value) => {
     ambientLight.color.set(value);
-}
-);
+});
 gameConfig.addEventListener('ambientLightIntensityChanged', (value) => {
     ambientLight.intensity = value;
-}
-);
+});
 
 export { light, ambientLight };

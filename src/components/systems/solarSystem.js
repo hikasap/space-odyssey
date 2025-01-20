@@ -35,7 +35,7 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
         scene.add(planet.mesh);
         celestialBodies.push(planet);
 
-        const val = getRandomNormal(3, 2);
+        const val = getRandomNormal(2, 2);
         const numMoons = Math.floor(Math.min(Math.max(val, 0), 10));
         for (let j = 0; j < numMoons; j++) {
             const moonSize = getRandomNumber() * 0.8 + 1;

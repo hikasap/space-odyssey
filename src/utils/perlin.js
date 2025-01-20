@@ -1,32 +1,82 @@
+/**
+ * Class representing 3D Perlin noise generator.
+ */
 export class Perlin {
+    /**
+     * Create a Perlin noise generator.
+     * @param {number} [frequency=1.0] - Frequency of the noise. Controls the scale of the noise.
+     * @param {number} [amplitude=1.0] - Amplitude of the noise. Controls the strength of the noise.
+     * 
+     * @example
+     * const perlin = new Perlin(2.0, 0.5);
+     * const noiseValue = perlin.noise(10, 20, 30);
+     * console.log('Noise Value:', noiseValue);
+     */
     constructor(frequency = 1.0, amplitude = 1.0) {
-        // Store additional parameters
+        /**
+         * Frequency of the noise.
+         * @type {number}
+         */
         this.frequency = frequency;
+
+        /**
+         * Amplitude of the noise.
+         * @type {number}
+         */
         this.amplitude = amplitude;
 
-        // Gradients for 3D Perlin
+        /**
+         * Gradients for 3D Perlin noise.
+         * @type {Array<Array<number>>}
+         * @private
+         */
         this.grad3 = [
             [1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0],
             [1, 0, 1], [-1, 0, 1], [1, 0, -1], [-1, 0, -1],
             [0, 1, 1], [0, -1, 1], [0, 1, -1], [0, -1, -1],
         ];
 
-        // Permutation array
+        /**
+         * Permutation array.
+         * @type {Array<number>}
+         * @private
+         */
         this.p = [];
         for (let i = 0; i < 256; i++) {
             this.p[i] = Math.floor(Math.random() * 256);
         }
+
+        /**
+         * Extended permutation array for noise generation.
+         * @type {Array<number>}
+         * @private
+         */
         this.perm = [];
         for (let i = 0; i < 512; i++) {
             this.perm[i] = this.p[i & 255];
         }
     }
 
+    /**
+     * Computes the dot product of a gradient and a position vector.
+     * @param {Array<number>} g - Gradient vector.
+     * @param {number} x - X-coordinate.
+     * @param {number} y - Y-coordinate.
+     * @param {number} z - Z-coordinate.
+     * @returns {number} Dot product result.
+     * @private
+     */
     dot(g, x, y, z) {
         return g[0] * x + g[1] * y + g[2] * z;
     }
 
-    // Core Perlin noise, same as original
+    /**
+     * Generates raw 3D Perlin noise for given coordinates.
+     * @param {number} x - X-coordinate.
+     * @param {number} [y=0] - Y-coordinate.
+     * @param {number} [z=0] - Z-coordinate.
+     * @returns {number} Raw Perlin noise value.
+     */
     rawNoise(x, y = 0, z = 0) {
         const F3 = 1 / 3, G3 = 1 / 6;
         let n0, n1, n2, n3;
@@ -91,12 +141,27 @@ export class Perlin {
         return 72 * (n0 + n1 + n2 + n3);
     }
 
-    // Public noise function that applies frequency and amplitude
+    /**
+     * Generates 3D Perlin noise with applied frequency and amplitude.
+     * @param {number} x - X-coordinate.
+     * @param {number} [y=0] - Y-coordinate.
+     * @param {number} [z=0] - Z-coordinate.
+     * @returns {number} Perlin noise value.
+     */
     noise(x, y = 0, z = 0) {
         return this.amplitude * this.rawNoise(x * this.frequency, y * this.frequency, z * this.frequency);
     }
 
-    // Fractal noise (fBM) example with octaves
+    /**
+     * Generates fractal noise (fBM) using multiple octaves.
+     * @param {number} x - X-coordinate.
+     * @param {number} [y=0] - Y-coordinate.
+     * @param {number} [z=0] - Z-coordinate.
+     * @param {number} [octaves=4] - Number of octaves to use.
+     * @param {number} [lacunarity=2] - Frequency multiplier for each octave.
+     * @param {number} [gain=0.5] - Amplitude multiplier for each octave.
+     * @returns {number} Fractal noise value.
+     */
     fractalNoise(x, y = 0, z = 0, octaves = 4, lacunarity = 2, gain = 0.5) {
         let sum = 0;
         let freq = this.frequency;
@@ -111,7 +176,3 @@ export class Perlin {
     }
 }
 
-// Example usage:
-// const perlin = new Perlin(2.0, 0.5);
-// let val1 = perlin.noise(10, 20, 30);         // Single layer noise
-// let val2 = perlin.fractalNoise(10, 20, 30); // Multiple octaves
