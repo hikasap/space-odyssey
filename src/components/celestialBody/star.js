@@ -12,6 +12,7 @@ export class Star extends CelestialBody {
         this.light.position.set(0, 0, 0);
         this.mesh.add(this.light);
 
+        super.addPhysics();
         this.initCelesitalDetails();
     }
 

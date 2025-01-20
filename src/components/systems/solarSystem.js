@@ -3,7 +3,7 @@ import { Planet } from '../celestialBody/planet.js';
 import { Moon } from '../celestialBody/moon.js';
 import { Asteroid } from '../celestialBody/asteroid.js';
 import * as THREE from 'three';
-import { getRandomNumber } from '../../utils/random.js';
+import { getRandomNormal, getRandomNumber } from '../../utils/random.js';
 
 export function generateSolarSystem(scene, celestialBodies, chunkOffset = new THREE.Vector3(0, 0, 0), chunkSize = 512) {
  
@@ -35,7 +35,8 @@ export function generateSolarSystem(scene, celestialBodies, chunkOffset = new TH
         scene.add(planet.mesh);
         celestialBodies.push(planet);
 
-        const numMoons = Math.floor(getRandomNumber() * 3);
+        const val = getRandomNormal(3, 2);
+        const numMoons = Math.floor(Math.min(Math.max(val, 0), 10));
         for (let j = 0; j < numMoons; j++) {
             const moonSize = getRandomNumber() * 0.8 + 1;
             const moonColor = getRandomNumber() * 0xffffff;

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { getRandomNormal, getRandomNumber } from '../../utils/random';
 import { createGoldbergPolyhedron } from '../../utils/goldbergPolygedron';
 import { generateRandomName } from '../../utils/nameGenerator';
+import PhysicsInstance from '../../core/physics';
 
 export class CelestialBody {
     constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = 'assets/textures/a_albedo.png') {
@@ -11,11 +12,9 @@ export class CelestialBody {
         this.rotationSpeedX = (getRandomNumber() - 0.5) * 0.01;
         this.rotationSpeedY = (getRandomNumber() - 0.5) * 0.01;
         this.name = generateRandomName();
-    
-        // const textureLoader = new THREE.TextureLoader();
-        // const texture = textureLoader.load(texturePath);
-
+        this.density = getRandomNumber() * 20 + 1;
         this.geometry = null;
+        this.pullRadius = 0;
 
         if (type === 'goldberg') {
             const detail = 5;
@@ -44,6 +43,18 @@ export class CelestialBody {
 
     }
 
+    addPhysics() {
+        this.mass = this.size * this.size * this.size * this.density;
+        // The radius where the planet starts to pull objects towards it
+        this.pullRadius = Math.cbrt(this.mass);
+        // Draw a debug sphere to show the pull radius
+        const pullGeometry = new THREE.SphereGeometry(this.pullRadius, 64, 64);
+        const pullMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true , opacity: 0.025, transparent: true });
+        const pullMesh = new THREE.Mesh(pullGeometry, pullMaterial);
+        this.mesh.add(pullMesh);
+
+    }
+
     rotate(deltaTime) {
         this.mesh.rotation.y += this.rotationSpeedX * deltaTime;
         this.mesh.rotation.x += this.rotationSpeedY * deltaTime;
@@ -56,6 +67,8 @@ export class CelestialBody {
         // Convert hex
         this.celestialDetails['Color'] = this.color.getHexString();
         this.celestialDetails['Type'] = this.type;
+        this.celestialDetails['Density'] = this.density;
+        this.celestialDetails['Mass'] = this.mass;
     }
 
 }

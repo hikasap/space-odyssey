@@ -99,6 +99,7 @@ export class Planet extends CelestialBody {
             this.addFluid();
         }            
 
+        super.addPhysics();
         this.initCelesitalDetails();
     }
 
@@ -125,7 +126,6 @@ export class Planet extends CelestialBody {
         const fluidMesh = new THREE.Mesh(fluidGeometry, fluidMaterial);
         this.fluidMesh = fluidMesh;    
             
-        
         this.mesh.add(this.fluidMesh);
     }
 

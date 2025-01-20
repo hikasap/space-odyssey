@@ -4,6 +4,7 @@ export class Asteroid extends CelestialBody {
     constructor(size, color) {
         super(size, color, 'cube');
         
+        super.addPhysics();
         this.initCelesitalDetails();
     }
 

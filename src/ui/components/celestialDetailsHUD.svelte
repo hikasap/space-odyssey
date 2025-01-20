@@ -21,7 +21,7 @@
     }
     
     onMount(() => {
-        const interval = setInterval(updateTargetCelestial, 10);
+        const interval = setInterval(updateTargetCelestial, 100);
         return () => clearInterval(interval);
     });
   </script>

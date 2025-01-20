@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import PhysicsInstance from '../core/physics';
 import { BatchedRenderer, ColorOverLife, ColorRange, ConeEmitter, ConstantColor, ConstantValue, IntervalValue, ParticleSystem} from 'three.quarks';
 import { gameConfig } from '../systems/configs/gameConfig';
+import { FuelManager } from './fuelManager';
 
 export class Spacecraft {
     constructor(position, scene, onModelLoaded) {
@@ -25,6 +26,8 @@ export class Spacecraft {
             { position: new THREE.Vector3(0, 0, -2.5), group: 'central' }
         ];
         this.particleSystems = {};
+
+        this.fuelManager = new FuelManager();
     }
 
     init() {
@@ -157,6 +160,11 @@ export class Spacecraft {
         this.scene.add(this.batchSystem);
     }
 
+    applyEngineForce(force) {
+        this.applyForce(force);
+        this.fuelManager.consumeFuel(force.length());
+    }
+
     update(deltaTime) {
         if (!this.model) return;
     
@@ -174,11 +182,13 @@ export class Spacecraft {
             const forwardVector = this.getForwardVector();
             const forceVector = forwardVector.clone().multiplyScalar(-force);
             this.applyForce(forceVector);
+            this.applyEngineForce(forceVector);
         }
         if (this.keys['s'] || this.keys['arrowdown']) {
             const forwardVector = this.getForwardVector();
             const forceVector = forwardVector.clone().multiplyScalar(backwardEngineForce);
             this.applyForce(forceVector);
+            this.applyEngineForce(forceVector);
         }
         
         // Apply Torques Based on Local Axes
@@ -187,30 +197,45 @@ export class Spacecraft {
             const upVector = this.getUpVector();
             const torque = upVector.clone().multiplyScalar(sideEngineForce * rotationalFactor);
             this.applyTorque(torque);
+            this.applyEngineForce(torque);
         }
         if (this.keys['d'] || this.keys['arrowright']) {
             // Yaw right (rotate around local Up axis)
             const upVector = this.getUpVector();
             const torque = upVector.clone().multiplyScalar(-sideEngineForce * rotationalFactor);
             this.applyTorque(torque);
+            this.applyEngineForce(torque);
         }
         if (this.keys['q']) {
             // Pitch nose up (rotate around local Right axis)
             const rightVector = this.getRightVector();
             const torque = rightVector.clone().multiplyScalar(sideEngineForce * rotationalFactor);
             this.applyTorque(torque);
+            this.applyEngineForce(torque);
         }
         if (this.keys['e']) {
             // Pitch nose down (rotate around local Right axis)
             const rightVector = this.getRightVector();
             const torque = rightVector.clone().multiplyScalar(-sideEngineForce * rotationalFactor);
             this.applyTorque(torque);
+            this.applyEngineForce(torque);
         }
     
         this.handleParticleActivation();
 
         // Update batch renderer
         this.batchSystem.update(deltaTime);
+
+        this.fuelManager.refuel(0.01 * deltaTime);
+
+    }
+
+    refuel(amount) {
+        this.fuelManager.refuel(amount);
+    }
+
+    getFuelLevel() {
+        return this.fuelManager.getFuelLevel();
     }
 
     handleParticleActivation() {

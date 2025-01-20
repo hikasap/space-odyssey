@@ -11,6 +11,7 @@ export class Moon extends CelestialBody {
         this.inclination = getRandomNumber() * Math.PI * 2; 
         this.parentPlanet = parentPlanet; 
         
+        super.addPhysics();
         this.initCelesitalDetails();
     }
 
