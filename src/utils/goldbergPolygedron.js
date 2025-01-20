@@ -12,9 +12,9 @@ import { Perlin } from './perlin';
  * @param {number} roughness - How much to randomly displace each vertex radially.
  * @returns {THREE.BufferGeometry} A BufferGeometry representing the subdivided polyhedron.
  */
-export function createGoldbergPolyhedron(radius = 1, detail = 1, roughness = 0.1, stepSize = 0.2, noisePower = 5) {
+export function createGoldbergPolyhedron(radius = 1, detail = 1, roughness = 0.1, stepSize = 0.2, frequency=0.1, amplitude=0.5) {
     
-  const perlin = new Perlin();
+  const perlin = new Perlin(frequency, amplitude);
 
     // 1) Define base icosahedron vertices & faces (mathematical approach)
   const t = (1 + Math.sqrt(5)) / 2; // golden ratio
@@ -119,9 +119,10 @@ export function createGoldbergPolyhedron(radius = 1, detail = 1, roughness = 0.1
   const positionArray = new Float32Array(finalPositions.length * 3);
   for (let i = 0; i < finalPositions.length; i++) {
     // random radial offset
-    let noiseVal = perlin.noise(finalPositions[i].x, finalPositions[i].y, finalPositions[i].z);
+    let noiseVal = perlin.fractalNoise(finalPositions[i].x, finalPositions[i].y, finalPositions[i].z);
+    
     // Make noise more pronounced
-    noiseVal = Math.pow(noiseVal, noisePower);
+    // noiseVal = Math.pow(noiseVal, noisePower);
     noiseVal = Math.floor(noiseVal / stepSize) * stepSize;
     let offset = noiseVal * roughness;
     // if (offset < 0) {

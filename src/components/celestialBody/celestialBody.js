@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getRandomNumber } from '../../utils/random';
+import { getRandomNormal, getRandomNumber } from '../../utils/random';
 import { createGoldbergPolyhedron } from '../../utils/goldbergPolygedron';
 import { generateRandomName } from '../../utils/nameGenerator';
 
@@ -20,9 +20,10 @@ export class CelestialBody {
         if (type === 'goldberg') {
             const detail = 5;
             const roughness = getRandomNumber() * 0.25 + 0.1;
-            const stepSize = getRandomNumber() * 0.25 + 0.1;
-            const noisePower = 2 * Math.floor(getRandomNumber() * 3) + 1;
-            this.geometry = createGoldbergPolyhedron(size, detail, roughness, stepSize, noisePower);
+            const stepSize = getRandomNumber() * 0.25 + 0.05;
+            let val = getRandomNormal(0.1, 0.5);
+            const frequency = Math.min(Math.max(val, 0), 1); 
+            this.geometry = createGoldbergPolyhedron(size, detail, roughness, stepSize, frequency, 0.5);
             this.material = new THREE.MeshStandardMaterial({ color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
         }
         else if (type === 'sphere') {

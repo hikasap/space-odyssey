@@ -92,7 +92,7 @@ export class Planet extends CelestialBody {
 
         if (this.has_atmosphere) {
             this.addAtmosphere();
-            this.has_fluid = getRandomNumber() > 0.5;
+            this.has_fluid = getRandomNumber() > 0.2;
         }
 
         if (this.has_fluid) {
