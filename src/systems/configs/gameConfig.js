@@ -1,8 +1,50 @@
 import * as dat from 'dat.gui';
 import * as THREE from 'three';
 
+/**
+ * @file gameConfig.js
+ * @description This file contains the GameConfig class which is used to manage the configuration settings for the game.
+ * It includes methods for initializing, resetting, and updating configuration properties, as well as managing event listeners.
+ * The configuration properties are also exposed to a dat.GUI interface for easy manipulation.
+ */
+
+/**
+ * @class GameConfig
+ * @classdesc Manages the configuration settings for the game.
+ */
 export class GameConfig {
     
+    /**
+     * Game configuration class.
+     * Initializes default values and sets up the GUI.
+     * 
+     * @constructor
+     * @property {Object} listeners - Object to hold event listeners.
+     * @property {Object} _defaultValues - Default configuration values.
+     * @property {number} _defaultValues.chunkSize - Size of each chunk in the game.
+     * @property {number} _defaultValues.speedMultiplier - Multiplier for game speed.
+     * @property {number} _defaultValues.solarSystemSeed - Seed for generating the solar system.
+     * @property {boolean} _defaultValues.displayStarfield - Flag to display the starfield.
+     * @property {boolean} _defaultValues.displayChunkBorders - Flag to display chunk borders.
+     * @property {boolean} _defaultValues.displayOrbits - Flag to display orbits.
+     * @property {number} _defaultValues.afterimagePassDamp - Damping factor for afterimage pass.
+     * @property {number} _defaultValues.cameraFov - Field of view for the camera.
+     * @property {number} _defaultValues.cameraNear - Near clipping plane for the camera.
+     * @property {number} _defaultValues.cameraFar - Far clipping plane for the camera.
+     * @property {number} _defaultValues.cameraLerpSpeed - Lerp speed for camera movement.
+     * @property {number} _defaultValues.cameraFollowOffsetX - Camera follow offset on the X axis.
+     * @property {number} _defaultValues.cameraFollowOffsetY - Camera follow offset on the Y axis.
+     * @property {number} _defaultValues.cameraFollowOffsetZ - Camera follow offset on the Z axis.
+     * @property {number} _defaultValues.starfieldDensity - Density of the starfield.
+     * @property {number} _defaultValues.starfieldColor - Color of the starfield.
+     * @property {number} _defaultValues.ambientLightColor - Color of the ambient light.
+     * @property {number} _defaultValues.ambientLightIntensity - Intensity of the ambient light.
+     * @property {number} _defaultValues.spacecraftMainEngineThrust - Thrust of the spacecraft's main engine.
+     * @property {number} _defaultValues.spacecraftSideEngineThrust - Thrust of the spacecraft's side engines.
+     * @property {number} _defaultValues.spacecraftBackEngineThrust - Thrust of the spacecraft's back engine.
+     * @property {number} _defaultValues.spacecraftRotationalFactor - Rotational factor of the spacecraft.
+     * @property {Object} gui - GUI for modifying game configuration.
+     */
     constructor() {
         this.listeners = {};
         this._defaultValues = {
@@ -33,21 +75,59 @@ export class GameConfig {
         this.gui = this.getDatGui();
     }
 
+    /**
+     * Initializes all configuration properties to their default values.
+     * 
+     * @method initAll
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @returns {void}
+     */
     initAll() {
         Object.assign(this, this._defaultValues);
     }
 
+    /**
+     * Resets all configuration properties to their default values.
+     * 
+     * @method resetAll
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @returns {void}
+     */
     resetAll() {
         Object.assign(this, this._defaultValues);
         this.updateGui();
     }
 
+    /**
+     * Resets a specific configuration property to its default value.
+     * 
+     * @method resetProperty
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @param {string} property - The property to reset.
+     * @returns {void}
+     */
     resetProperty(property) {
         if (this._defaultValues.hasOwnProperty(property)) {
             this[property] = this._defaultValues[property];
         }
     }
 
+    /**
+     * Updates the GUI to reflect the current configuration values.
+     * Goes over all folders and controllers and updates their display.
+     * 
+     * @method updateGui
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @returns {void}
+     */
     updateGui() {
         const folderNames = Object.keys(this.gui.__folders);
         folderNames.forEach(folderName => {
@@ -58,9 +138,21 @@ export class GameConfig {
         });
     }
 
+    /**
+     * Creates a dat.GUI interface for modifying game configuration.
+     * Adds folders and controllers for each configuration property.
+     * Sets up range values and step sizes for each controller.
+     * 
+     * @method getDatGui
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @returns {dat.GUI} - The dat.GUI interface.
+    */
     getDatGui() {
         const gui = new dat.GUI();
         const config = this;
+
         const generalFolder = gui.addFolder('General');
         generalFolder.add(config, 'chunkSize', 128, 2048).name('Chunk Size');
         generalFolder.add(config, 'speedMultiplier', 0, 10000, 0.25).name('Speed Multiplier');
@@ -81,7 +173,6 @@ export class GameConfig {
         cameraFolder.add(config, 'cameraFollowOffsetY', -1.0, 1.0, 0.01).name('Camera Follow Offset Y');
         cameraFolder.add(config, 'cameraFollowOffsetZ', -1.0, 1.0, 0.01).name('Camera Follow Offset Z');
 
-
         const starfieldFolder = gui.addFolder('Starfield');
         starfieldFolder.add(config, 'starfieldDensity', 1000, 50000).name('Starfield Density');
         starfieldFolder.addColor(config, 'starfieldColor').name('Starfield Color');
@@ -97,12 +188,24 @@ export class GameConfig {
         spacecraftFolder.add(config, 'spacecraftRotationalFactor', 0.001, 0.01).name('Rotational Factor');
 
         gui.add(config, 'resetAll').name('Reset All');
-
-        
-
         return gui;
     }
 
+    /**
+     * Adds an event listener for a specific event.
+     * 
+     * @method addEventListener
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @param {string} event - The event to listen for.
+     * @param {Function} callback - The callback function to execute when the event is triggered.
+     * @returns {void}
+     * @example
+     * gameConfig.addEventListener('chunkSizeChanged', (value) => {
+     *    console.log('Chunk size changed to', value);
+     * });
+     */
     addEventListener(event, callback) {
         if (!this.listeners[event]) {
             this.listeners[event] = [];
@@ -110,6 +213,13 @@ export class GameConfig {
         this.listeners[event].push(callback);
     }
 
+    
+    /**
+     * Removes an event listener for the specified event.
+     *
+     * @param {string} event - The name of the event to remove the listener from.
+     * @param {Function} callback - The callback function to remove from the event's listeners.
+     */
     removeEventListener(event, callback) {
         if (!this.listeners[event]) return;
         const index = this.listeners[event].indexOf(callback);
@@ -118,12 +228,17 @@ export class GameConfig {
         }
     }
 
+    /**
+     * Dispatches an event to all registered listeners.
+     *
+     * @param {string} event - The name of the event to dispatch.
+     * @param {*} data - The data to pass to the event listeners.
+     */
     dispatchEvent(event, data) {
         if (!this.listeners[event]) return;
         this.listeners[event].forEach(callback => {
             callback(data);
-        }
-        );
+        });
     }
 
     get chunkSize() {
@@ -309,6 +424,8 @@ export class GameConfig {
     }
 }
 
+// Singleton instance of the GameConfig class.
 GameConfig.instance = new GameConfig();
 
+// Export the singleton instance.
 export const gameConfig = GameConfig.instance;
