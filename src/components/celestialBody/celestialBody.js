@@ -1,8 +1,11 @@
 import * as THREE from 'three';
 import { getRandomNormal, getRandomNumber } from '../../utils/random';
-import { createGoldbergPolyhedron } from '../../utils/goldbergPolygedron';
+import { createGoldbergPolyhedron } from '../../utils/geometry/goldbergPolygedron';
 import { generateRandomName } from '../../utils/nameGenerator';
 import PhysicsInstance from '../../core/physics';
+import { EventManager } from '../../systems/eventManager';
+import { Star } from './star';
+import { gameConfig } from '../../systems/configs/gameConfig';
 
 export class CelestialBody {
     constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = 'assets/textures/a_albedo.png') {
@@ -15,7 +18,7 @@ export class CelestialBody {
         this.density = getRandomNumber() * 20 + 1;
         this.geometry = null;
         this.pullRadius = 0;
-
+        this.eventManager = new EventManager();
         if (type === 'goldberg') {
             const detail = 4;
             const roughness = getRandomNumber() * 0.25 + 0.1;
@@ -47,12 +50,30 @@ export class CelestialBody {
         this.mass = this.size * this.size * this.size * this.density;
         // The radius where the planet starts to pull objects towards it
         this.pullRadius = Math.cbrt(this.mass);
-        // // Draw a debug sphere to show the pull radius
-        // const pullGeometry = new THREE.SphereGeometry(this.pullRadius, 64, 64);
-        // const pullMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true , opacity: 0.025, transparent: true });
-        // const pullMesh = new THREE.Mesh(pullGeometry, pullMaterial);
-        // this.mesh.add(pullMesh);
 
+        // I want to 
+
+        // // Draw a debug sphere to show the pull radius
+        const pullGeometry = new THREE.SphereGeometry(this.pullRadius, 64, 64);
+        const pullMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true , opacity: 0.025, transparent: true });
+        const pullMesh = new THREE.Mesh(pullGeometry, pullMaterial);
+        this.mesh.add(pullMesh);
+        pullMesh.visible = gameConfig.displayPullRadius;
+
+        gameConfig.addEventListener('displayPullRadiusChanged', (event) => {
+            pullMesh.visible = gameConfig.displayPullRadius;
+        });
+    }
+
+    checkSpacecraftProximity(spacecraft) {
+        if (!spacecraft.getMesh()) return;
+        const distance = this.mesh.position.distanceTo(spacecraft.getMesh().position);
+        if (distance < this.pullRadius && !spacecraft.celestialBodiesInPullRadius.includes(this)) {
+            this.eventManager.emit('enterPullRadius', this);
+        } 
+        else if (distance > this.pullRadius && spacecraft.celestialBodiesInPullRadius.includes(this)) {
+            this.eventManager.emit('leavePullRadius', this);
+        }
     }
 
     rotate(deltaTime) {

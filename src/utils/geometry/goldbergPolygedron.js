@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Perlin } from './perlin';
+import { Perlin } from '../perlin';
 
 /**
  * Creates a Goldberg-like polyhedron from scratch by:

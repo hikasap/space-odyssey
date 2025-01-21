@@ -27,6 +27,7 @@ export class Spacecraft {
         ];
         this.particleSystems = {};
 
+        this.celestialBodiesInPullRadius = [];
         this.fuelManager = new FuelManager();
     }
 
@@ -237,6 +238,20 @@ export class Spacecraft {
         return this.fuelManager.getFuelLevel();
     }
 
+
+    handleEnterPullRadius(celestialBody) {
+        if (!this.celestialBodiesInPullRadius.includes(celestialBody)) {
+            this.celestialBodiesInPullRadius.push(celestialBody);
+        }
+    }
+
+    handleLeavePullRadius(celestialBody) {
+        const index = this.celestialBodiesInPullRadius.indexOf(celestialBody);
+        if (index !== -1) {
+            this.celestialBodiesInPullRadius.splice(index, 1);
+        }
+    }
+
     handleParticleActivation() {
         let engineAvailable = [0, 0, 0, 0, 0];
 
@@ -325,4 +340,6 @@ export class Spacecraft {
     getMesh() {
         return this.model;
     }
+
+
 }

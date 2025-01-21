@@ -47,11 +47,6 @@ export class SpaceScene{
         renderer.setSize(window.innerWidth, window.innerHeight);
         this._scene.add(ambientLight);
     
-        this.addSolarSystem();
-        this.addChunkBorders();
-        this.addBackground();
-    
-
         this._composer = new EffectComposer(renderer);
         this._composer.addPass(new RenderPass(this._scene, this._camera));
         this._composer.addPass(new AfterimagePass(0.5));
@@ -61,6 +56,10 @@ export class SpaceScene{
         this._spacecraft = new Spacecraft(spaceCraftPosition, this._scene, () => {
             this._camera.setFollowTarget(this._spacecraft.getMesh());
         });
+
+        this.addSolarSystem();
+        this.addChunkBorders();
+        this.addBackground();
 
         this._detectRaycast = setupInteraction(this);
 
@@ -136,6 +135,7 @@ export class SpaceScene{
             if (body instanceof Planet || body instanceof Moon) {
                 body.updateOrbit(deltaTime);
             }
+            body.checkSpacecraftProximity(this._spacecraft);
         });
         
         PhysicsInstance.update(deltaTime);
@@ -174,6 +174,10 @@ export class SpaceScene{
             }
         }
 
+        this._celestialBodies.forEach(celestialBody => {
+            celestialBody.eventManager.subscribe('enterPullRadius', this._spacecraft.handleEnterPullRadius.bind(this._spacecraft));
+            celestialBody.eventManager.subscribe('leavePullRadius', this._spacecraft.handleLeavePullRadius.bind(this._spacecraft));
+        });
     }
 
     addBackground(){
