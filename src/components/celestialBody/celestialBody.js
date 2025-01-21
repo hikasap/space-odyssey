@@ -17,7 +17,7 @@ export class CelestialBody {
         this.pullRadius = 0;
 
         if (type === 'goldberg') {
-            const detail = 5;
+            const detail = 4;
             const roughness = getRandomNumber() * 0.25 + 0.1;
             const stepSize = getRandomNumber() * 0.25 + 0.05;
             let val = getRandomNormal(0.1, 0.5);
