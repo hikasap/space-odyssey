@@ -5,6 +5,7 @@ import { generateRandomName } from '../../utils/nameGenerator';
 import PhysicsInstance from '../../core/physics';
 import { EventManager } from '../../systems/eventManager';
 import { Star } from './star';
+import { gameConfig } from '../../systems/configs/gameConfig';
 
 export class CelestialBody {
     constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = 'assets/textures/a_albedo.png') {
@@ -57,6 +58,12 @@ export class CelestialBody {
         const pullMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true , opacity: 0.025, transparent: true });
         const pullMesh = new THREE.Mesh(pullGeometry, pullMaterial);
         this.mesh.add(pullMesh);
+        pullMesh.visible = gameConfig.displayPullRadius;
+
+        gameConfig.addEventListener('displayPullRadiusChanged', (event) => {
+            console.log('Display pull radius changed', event);
+            pullMesh.visible = gameConfig.displayPullRadius;
+        });
     }
 
     checkSpacecraftProximity(spacecraft) {

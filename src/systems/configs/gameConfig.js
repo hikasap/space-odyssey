@@ -27,6 +27,7 @@ export class GameConfig {
      * @property {boolean} _defaultValues.displayStarfield - Flag to display the starfield.
      * @property {boolean} _defaultValues.displayChunkBorders - Flag to display chunk borders.
      * @property {boolean} _defaultValues.displayOrbits - Flag to display orbits.
+     * @property {boolean} _defaultValues.displayPullRadius - Flag to display pull radius.
      * @property {number} _defaultValues.afterimagePassDamp - Damping factor for afterimage pass.
      * @property {number} _defaultValues.cameraFov - Field of view for the camera.
      * @property {number} _defaultValues.cameraNear - Near clipping plane for the camera.
@@ -54,6 +55,7 @@ export class GameConfig {
             displayStarfield: true,
             displayChunkBorders: false,
             displayOrbits: true,
+            displayPullRadius: false,
             afterimagePassDamp: 0.5,
             cameraFov: 75,
             cameraNear: 0.1,
@@ -162,6 +164,7 @@ export class GameConfig {
         displayFolder.add(config, 'displayStarfield').name('Display Starfield');
         displayFolder.add(config, 'displayChunkBorders').name('Display Chunk Borders');
         displayFolder.add(config, 'displayOrbits').name('Display Orbits');
+        displayFolder.add(config, 'displayPullRadius').name('Display Pull Radius');
         displayFolder.add(config, 'afterimagePassDamp', 0, 1, 0.01).name('Afterimage Pass Damp');
 
         const cameraFolder = gui.addFolder('Camera');
@@ -296,6 +299,15 @@ export class GameConfig {
         this.dispatchEvent('displayOrbitsChanged', value);
     }
 
+    get displayPullRadius() {
+        return this._displayPullRadius;
+    }
+
+    set displayPullRadius(value) {
+        this._displayPullRadius = value;
+        this.dispatchEvent('displayPullRadiusChanged', value);
+    }
+    
     get afterimagePassDamp() {
         return this._afterimagePassDamp;
     }
