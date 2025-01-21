@@ -61,7 +61,6 @@ export class CelestialBody {
         pullMesh.visible = gameConfig.displayPullRadius;
 
         gameConfig.addEventListener('displayPullRadiusChanged', (event) => {
-            console.log('Display pull radius changed', event);
             pullMesh.visible = gameConfig.displayPullRadius;
         });
     }

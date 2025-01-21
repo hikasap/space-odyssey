@@ -242,7 +242,6 @@ export class Spacecraft {
     handleEnterPullRadius(celestialBody) {
         if (!this.celestialBodiesInPullRadius.includes(celestialBody)) {
             this.celestialBodiesInPullRadius.push(celestialBody);
-            console.log(`Entered pull radius of ${celestialBody.name}`);
         }
     }
 
@@ -250,7 +249,6 @@ export class Spacecraft {
         const index = this.celestialBodiesInPullRadius.indexOf(celestialBody);
         if (index !== -1) {
             this.celestialBodiesInPullRadius.splice(index, 1);
-            console.log(`Left pull radius of ${celestialBody.name}`);
         }
     }
 
