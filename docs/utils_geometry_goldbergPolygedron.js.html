@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/geometry/goldbergPolygedron.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/geometry/goldbergPolygedron.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as THREE from 'three';
+import { Perlin } from '../perlin';
+
+/**
+ * Creates a Goldberg-like polyhedron from scratch by:
+ *  1) Defining base icosahedron vertices and faces mathematically.
+ *  2) Subdividing those faces a given number of times.
+ *  3) Projecting new vertices onto a sphere (and applying random height perturbations).
+ *
+ * @param {number} radius    - Target radius of the sphere.
+ * @param {number} detail    - Number of subdivisions (higher = more faces).
+ * @param {number} roughness - How much to randomly displace each vertex radially.
+ * @returns {THREE.BufferGeometry} A BufferGeometry representing the subdivided polyhedron.
+ */
+export function createGoldbergPolyhedron(radius = 1, detail = 1, roughness = 0.1, stepSize = 0.2, frequency=0.1, amplitude=0.5) {
+    
+  const perlin = new Perlin(frequency, amplitude);
+
+    // 1) Define base icosahedron vertices &amp; faces (mathematical approach)
+  const t = (1 + Math.sqrt(5)) / 2; // golden ratio
+  const baseVertices = [
+    new THREE.Vector3(-1,  t,  0),
+    new THREE.Vector3( 1,  t,  0),
+    new THREE.Vector3(-1, -t,  0),
+    new THREE.Vector3( 1, -t,  0),
+    new THREE.Vector3( 0, -1,  t),
+    new THREE.Vector3( 0,  1,  t),
+    new THREE.Vector3( 0, -1, -t),
+    new THREE.Vector3( 0,  1, -t),
+    new THREE.Vector3( t,  0, -1),
+    new THREE.Vector3( t,  0,  1),
+    new THREE.Vector3(-t,  0, -1),
+    new THREE.Vector3(-t,  0,  1),
+  ];
+
+  // Normalize all base vertices (project onto unit sphere to start)
+  baseVertices.forEach(v => v.normalize());
+
+  // 20 triangular faces of an icosahedron (indices into baseVertices)
+  const baseFaces = [
+    [0, 11, 5],
+    [0, 5, 1],
+    [0, 1, 7],
+    [0, 7, 10],
+    [0, 10, 11],
+    [1, 5, 9],
+    [5, 11, 4],
+    [11, 10, 2],
+    [10, 7, 6],
+    [7, 1, 8],
+    [3, 9, 4],
+    [3, 4, 2],
+    [3, 2, 6],
+    [3, 6, 8],
+    [3, 8, 9],
+    [4, 9, 5],
+    [2, 4, 11],
+    [6, 2, 10],
+    [8, 6, 7],
+    [9, 8, 1],
+  ];
+
+  // 2) Subdivide each face detail times &amp; gather final vertices/triangles
+  const finalPositions = [];
+  const finalIndices = [];
+  let vertexMap = new Map(); // to avoid duplicating vertices
+  let indexCounter = 0;
+
+  /**
+   * Helper: add a new THREE.Vector3 to finalPositions, return its index.
+   * If the vertex is already stored, reuse the existing index.
+   */
+  function addVertex(vec) {
+    // Key by approximate coordinate to limit duplicates
+    const key = `${vec.x.toFixed(5)},${vec.y.toFixed(5)},${vec.z.toFixed(5)}`;
+    if (vertexMap.has(key)) {
+      return vertexMap.get(key);
+    }
+    finalPositions.push(vec);
+    vertexMap.set(key, indexCounter);
+    return indexCounter++;
+  }
+
+  /**
+   * Helper: subdivide a single triangle [v1, v2, v3] recursively.
+   * v1, v2, v3 are THREE.Vector3 positions on the unit sphere.
+   */
+  function subdivideTriangle(v1, v2, v3, depth) {
+    if (depth &lt;= 0) {
+      // add face [v1, v2, v3] to finalIndices
+      const i1 = addVertex(v1.clone());
+      const i2 = addVertex(v2.clone());
+      const i3 = addVertex(v3.clone());
+      finalIndices.push(i1, i2, i3);
+      return;
+    }
+    // midpoints
+    const v12 = v1.clone().add(v2).multiplyScalar(0.5).normalize();
+    const v23 = v2.clone().add(v3).multiplyScalar(0.5).normalize();
+    const v31 = v3.clone().add(v1).multiplyScalar(0.5).normalize();
+    // subdivide further
+    subdivideTriangle(v1,  v12, v31, depth - 1);
+    subdivideTriangle(v2,  v23, v12, depth - 1);
+    subdivideTriangle(v3,  v31, v23, depth - 1);
+    subdivideTriangle(v12, v23, v31, depth - 1);
+  }
+
+  // Subdivide all base icosahedron faces
+  for (const face of baseFaces) {
+    const [i1, i2, i3] = face;
+    const v1 = baseVertices[i1];
+    const v2 = baseVertices[i2];
+    const v3 = baseVertices[i3];
+    subdivideTriangle(v1, v2, v3, detail);
+  }
+
+  // 3) Create BufferGeometry &amp; project new vertices onto radius + roughness
+  // Convert finalPositions (THREE.Vector3) to typed arrays
+  const positionArray = new Float32Array(finalPositions.length * 3);
+  for (let i = 0; i &lt; finalPositions.length; i++) {
+    // random radial offset
+    let noiseVal = perlin.fractalNoise(finalPositions[i].x, finalPositions[i].y, finalPositions[i].z);
+    
+    // Make noise more pronounced
+    // noiseVal = Math.pow(noiseVal, noisePower);
+    noiseVal = Math.floor(noiseVal / stepSize) * stepSize;
+    let offset = noiseVal * roughness;
+    // if (offset &lt; 0) {
+    //   offset = -1;
+    // }
+    finalPositions[i].multiplyScalar(radius * (1 + offset));
+    positionArray[3 * i + 0] = finalPositions[i].x;
+    positionArray[3 * i + 1] = finalPositions[i].y;
+    positionArray[3 * i + 2] = finalPositions[i].z;
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3));
+  geometry.setIndex(finalIndices);
+
+
+  // Recompute normals &amp; bounding info
+  geometry.computeVertexNormals();
+  geometry.computeBoundingSphere();
+
+  return geometry;
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-NameGenerator.html">NameGenerator</a></li></ul><h3>Classes</h3><ul><li><a href="Asteroid.html">Asteroid</a></li><li><a href="FuelManager.html">FuelManager</a></li><li><a href="GameConfig.html">GameConfig</a></li><li><a href="GameConfig_GameConfig.html">GameConfig</a></li><li><a href="Perlin.html">Perlin</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createGoldbergPolyhedron">createGoldbergPolyhedron</a></li><li><a href="global.html#getIntersectedObject">getIntersectedObject</a></li><li><a href="global.html#setSeed">setSeed</a></li><li><a href="global.html#setupInteraction">setupInteraction</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jan 21 2025 19:15:09 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
