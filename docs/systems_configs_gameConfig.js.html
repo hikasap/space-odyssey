@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: systems/configs/gameConfig.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: systems/configs/gameConfig.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as dat from 'dat.gui';
+import * as THREE from 'three';
+
+/**
+ * @file gameConfig.js
+ * @description This file contains the GameConfig class which is used to manage the configuration settings for the game.
+ * It includes methods for initializing, resetting, and updating configuration properties, as well as managing event listeners.
+ * The configuration properties are also exposed to a dat.GUI interface for easy manipulation.
+ */
+
+/**
+ * @class GameConfig
+ * @classdesc Manages the configuration settings for the game.
+ */
+export class GameConfig {
+    
+    /**
+     * Game configuration class.
+     * Initializes default values and sets up the GUI.
+     * 
+     * @constructor
+     * @property {Object} listeners - Object to hold event listeners.
+     * @property {Object} _defaultValues - Default configuration values.
+     * @property {number} _defaultValues.chunkSize - Size of each chunk in the game.
+     * @property {number} _defaultValues.speedMultiplier - Multiplier for game speed.
+     * @property {number} _defaultValues.solarSystemSeed - Seed for generating the solar system.
+     * @property {boolean} _defaultValues.displayStarfield - Flag to display the starfield.
+     * @property {boolean} _defaultValues.displayChunkBorders - Flag to display chunk borders.
+     * @property {boolean} _defaultValues.displayOrbits - Flag to display orbits.
+     * @property {number} _defaultValues.afterimagePassDamp - Damping factor for afterimage pass.
+     * @property {number} _defaultValues.cameraFov - Field of view for the camera.
+     * @property {number} _defaultValues.cameraNear - Near clipping plane for the camera.
+     * @property {number} _defaultValues.cameraFar - Far clipping plane for the camera.
+     * @property {number} _defaultValues.cameraLerpSpeed - Lerp speed for camera movement.
+     * @property {number} _defaultValues.cameraFollowOffsetX - Camera follow offset on the X axis.
+     * @property {number} _defaultValues.cameraFollowOffsetY - Camera follow offset on the Y axis.
+     * @property {number} _defaultValues.cameraFollowOffsetZ - Camera follow offset on the Z axis.
+     * @property {number} _defaultValues.starfieldDensity - Density of the starfield.
+     * @property {number} _defaultValues.starfieldColor - Color of the starfield.
+     * @property {number} _defaultValues.ambientLightColor - Color of the ambient light.
+     * @property {number} _defaultValues.ambientLightIntensity - Intensity of the ambient light.
+     * @property {number} _defaultValues.spacecraftMainEngineThrust - Thrust of the spacecraft's main engine.
+     * @property {number} _defaultValues.spacecraftSideEngineThrust - Thrust of the spacecraft's side engines.
+     * @property {number} _defaultValues.spacecraftBackEngineThrust - Thrust of the spacecraft's back engine.
+     * @property {number} _defaultValues.spacecraftRotationalFactor - Rotational factor of the spacecraft.
+     * @property {Object} gui - GUI for modifying game configuration.
+     */
+    constructor() {
+        this.listeners = {};
+        this._defaultValues = {
+            chunkSize: 2048,
+            speedMultiplier: 1.0,
+            solarSystemSeed: 61,
+            displayStarfield: true,
+            displayChunkBorders: false,
+            displayOrbits: true,
+            afterimagePassDamp: 0.5,
+            cameraFov: 75,
+            cameraNear: 0.1,
+            cameraFar: 2048 * 4,
+            cameraLerpSpeed: 0.3,
+            cameraFollowOffsetX : 0,
+            cameraFollowOffsetY : 0.1,
+            cameraFollowOffsetZ : -0.2,
+            starfieldDensity: 10000,
+            starfieldColor: 0xaaaaaa,
+            ambientLightColor: 0xffffff,
+            ambientLightIntensity: 0.05,
+            spacecraftMainEngineThrust: 2500,
+            spacecraftSideEngineThrust: 200,
+            spacecraftBackEngineThrust: 5,
+            spacecraftRotationalFactor: 0.002,
+        };
+        this.initAll();
+        this.gui = this.getDatGui();
+    }
+
+    /**
+     * Initializes all configuration properties to their default values.
+     * 
+     * @method initAll
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @returns {void}
+     */
+    initAll() {
+        Object.assign(this, this._defaultValues);
+    }
+
+    /**
+     * Resets all configuration properties to their default values.
+     * 
+     * @method resetAll
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @returns {void}
+     */
+    resetAll() {
+        Object.assign(this, this._defaultValues);
+        this.updateGui();
+    }
+
+    /**
+     * Resets a specific configuration property to its default value.
+     * 
+     * @method resetProperty
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @param {string} property - The property to reset.
+     * @returns {void}
+     */
+    resetProperty(property) {
+        if (this._defaultValues.hasOwnProperty(property)) {
+            this[property] = this._defaultValues[property];
+        }
+    }
+
+    /**
+     * Updates the GUI to reflect the current configuration values.
+     * Goes over all folders and controllers and updates their display.
+     * 
+     * @method updateGui
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @returns {void}
+     */
+    updateGui() {
+        const folderNames = Object.keys(this.gui.__folders);
+        folderNames.forEach(folderName => {
+            const folder = this.gui.__folders[folderName];
+            folder.__controllers.forEach(controller => {
+                controller.updateDisplay();
+            });
+        });
+    }
+
+    /**
+     * Creates a dat.GUI interface for modifying game configuration.
+     * Adds folders and controllers for each configuration property.
+     * Sets up range values and step sizes for each controller.
+     * 
+     * @method getDatGui
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @returns {dat.GUI} - The dat.GUI interface.
+    */
+    getDatGui() {
+        const gui = new dat.GUI();
+        const config = this;
+
+        const generalFolder = gui.addFolder('General');
+        generalFolder.add(config, 'chunkSize', 128, 2048).name('Chunk Size');
+        generalFolder.add(config, 'speedMultiplier', 0, 10000, 0.25).name('Speed Multiplier');
+        generalFolder.add(config, 'solarSystemSeed', 0, 1000).name('Solar System Seed');
+
+        const displayFolder = gui.addFolder('Display');
+        displayFolder.add(config, 'displayStarfield').name('Display Starfield');
+        displayFolder.add(config, 'displayChunkBorders').name('Display Chunk Borders');
+        displayFolder.add(config, 'displayOrbits').name('Display Orbits');
+        displayFolder.add(config, 'afterimagePassDamp', 0, 1, 0.01).name('Afterimage Pass Damp');
+
+        const cameraFolder = gui.addFolder('Camera');
+        cameraFolder.add(config, 'cameraFov', 30, 120).name('Camera FOV');
+        cameraFolder.add(config, 'cameraNear', 0.01, 1, 0.01).name('Camera Near');
+        cameraFolder.add(config, 'cameraFar', 512, 16384).name('Camera Far');
+        cameraFolder.add(config, 'cameraLerpSpeed', 0.01, 1).name('Camera Lerp Speed');
+        cameraFolder.add(config, 'cameraFollowOffsetX', -1.0, 1.0, 0.01).name('Camera Follow Offset X');
+        cameraFolder.add(config, 'cameraFollowOffsetY', -1.0, 1.0, 0.01).name('Camera Follow Offset Y');
+        cameraFolder.add(config, 'cameraFollowOffsetZ', -1.0, 1.0, 0.01).name('Camera Follow Offset Z');
+
+        const starfieldFolder = gui.addFolder('Starfield');
+        starfieldFolder.add(config, 'starfieldDensity', 1000, 50000).name('Starfield Density');
+        starfieldFolder.addColor(config, 'starfieldColor').name('Starfield Color');
+
+        const lightFolder = gui.addFolder('Light');
+        lightFolder.addColor(config, 'ambientLightColor').name('Ambient Light Color');
+        lightFolder.add(config, 'ambientLightIntensity', 0, 1).name('Ambient Light Intensity');
+        
+        const spacecraftFolder = gui.addFolder('Spacecraft');
+        spacecraftFolder.add(config, 'spacecraftMainEngineThrust' , 1, 10000).name('Main Engine Thrust');
+        spacecraftFolder.add(config, 'spacecraftSideEngineThrust', 1, 1000).name('Side Engine Thrust');
+        spacecraftFolder.add(config, 'spacecraftBackEngineThrust', 0.1, 10).name('Back Engine Thrust');
+        spacecraftFolder.add(config, 'spacecraftRotationalFactor', 0.001, 0.01).name('Rotational Factor');
+
+        gui.add(config, 'resetAll').name('Reset All');
+        return gui;
+    }
+
+    /**
+     * Adds an event listener for a specific event.
+     * 
+     * @method addEventListener
+     * @memberof GameConfig
+     * @instance
+     * @public
+     * @param {string} event - The event to listen for.
+     * @param {Function} callback - The callback function to execute when the event is triggered.
+     * @returns {void}
+     * @example
+     * gameConfig.addEventListener('chunkSizeChanged', (value) => {
+     *    console.log('Chunk size changed to', value);
+     * });
+     */
+    addEventListener(event, callback) {
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
+        }
+        this.listeners[event].push(callback);
+    }
+
+    
+    /**
+     * Removes an event listener for the specified event.
+     *
+     * @param {string} event - The name of the event to remove the listener from.
+     * @param {Function} callback - The callback function to remove from the event's listeners.
+     */
+    removeEventListener(event, callback) {
+        if (!this.listeners[event]) return;
+        const index = this.listeners[event].indexOf(callback);
+        if (index > -1) {
+            this.listeners[event].splice(index, 1);
+        }
+    }
+
+    /**
+     * Dispatches an event to all registered listeners.
+     *
+     * @param {string} event - The name of the event to dispatch.
+     * @param {*} data - The data to pass to the event listeners.
+     */
+    dispatchEvent(event, data) {
+        if (!this.listeners[event]) return;
+        this.listeners[event].forEach(callback => {
+            callback(data);
+        });
+    }
+
+    get chunkSize() {
+        return this._chunkSize;
+    }
+
+    set chunkSize(value) {
+        this._chunkSize = value;
+        this.dispatchEvent('chunkSizeChanged', value);
+    }
+
+    get speedMultiplier() {
+        return this._speedMultiplier;
+    }
+
+    set speedMultiplier(value) {
+        this._speedMultiplier = value;
+        this.dispatchEvent('speedMultiplierChanged', value);
+    }
+
+    get solarSystemSeed() {
+        return this._solarSystemSeed;
+        
+    }
+
+    set solarSystemSeed(value) {
+        this._solarSystemSeed = value
+        this.dispatchEvent('solarSystemSeedChanged', value);
+    }
+
+    get displayStarfield() {
+        return this._displayStarfield;
+    }
+
+    set displayStarfield(value) {
+        this._displayStarfield = value;
+        this.dispatchEvent('displayStarfieldChanged', value);
+    }
+
+    get displayChunkBorders() {
+        return this._displayChunkBorders;
+    }
+
+    set displayChunkBorders(value) {
+        this._displayChunkBorders = value;
+        this.dispatchEvent('displayChunkBordersChanged', value);
+    }
+
+    get displayOrbits() {
+        return this._displayOrbits;
+    }
+
+    set displayOrbits(value) {
+        this._displayOrbits = value;
+        this.dispatchEvent('displayOrbitsChanged', value);
+    }
+
+    get afterimagePassDamp() {
+        return this._afterimagePassDamp;
+    }
+
+    set afterimagePassDamp(value) {
+        this._afterimagePassDamp = value;
+        this.dispatchEvent('afterimagePassDampChanged', value);
+    }
+
+    get cameraFov() {
+        return this._cameraFov;
+    }
+
+    set cameraFov(value) {
+        this._cameraFov = value;
+        this.dispatchEvent('cameraFovChanged', value);
+    }
+
+    get cameraNear() {
+        return this._cameraNear;
+    }
+
+    set cameraNear(value) {
+        this._cameraNear = value;
+        this.dispatchEvent('cameraNearChanged', value);
+    }
+
+    get cameraFar() {
+        return this._cameraFar;
+    }
+
+    set cameraFar(value) {
+        this._cameraFar = value;
+        this.dispatchEvent('cameraFarChanged', value);
+    }
+
+    get starfieldDensity() {
+        return this._starfieldDensity;
+    }
+
+    set starfieldDensity(value) {
+        this._starfieldDensity = value;
+        this.dispatchEvent('starfieldDensityChanged', value);
+    }
+
+    get starfieldColor() {
+        return this._starfieldColor;
+    }
+
+    set starfieldColor(value) {
+        this._starfieldColor = value;
+        this.dispatchEvent('starfieldColorChanged', value);
+    }
+
+    get cameraFollowOffset() {
+        return new THREE.Vector3(this.cameraFollowOffsetX, this.cameraFollowOffsetY, this.cameraFollowOffsetZ);
+    }
+
+    set cameraFollowOffset(value) {
+        this.cameraFollowOffsetX = value.x;
+        this.cameraFollowOffsetY = value.y;
+        this.cameraFollowOffsetZ = value.z;
+    }
+
+    get cameraLerpSpeed() {
+        return this._cameraLerpSpeed;
+    }
+
+    set cameraLerpSpeed(value) {
+        this._cameraLerpSpeed = value;
+        this.dispatchEvent('cameraLerpSpeedChanged', value);
+    }
+
+    get ambientLightColor() {
+        return this._ambientLightColor;
+    }
+
+    set ambientLightColor(value) {
+        this._ambientLightColor = value;
+        this.dispatchEvent('ambientLightColorChanged', value);
+    }
+
+    get ambientLightIntensity() {
+        return this._ambientLightIntensity;
+    }
+
+    set ambientLightIntensity(value) {
+        this._ambientLightIntensity = value;
+        this.dispatchEvent('ambientLightIntensityChanged', value);
+    }
+
+    get spacecraftMainEngineThrust() {
+        return this._spacecraftMainEngineThrust;
+    }
+
+    set spacecraftMainEngineThrust(value) {
+        this._spacecraftMainEngineThrust = value;
+        this.dispatchEvent('spacecraftMainEngineThrustChanged', value);
+    }
+
+    get spacecraftSideEngineThrust() {
+        return this._spacecraftSideEngineThrust;
+    }
+
+    set spacecraftSideEngineThrust(value) {
+        this._spacecraftSideEngineThrust = value;
+        this.dispatchEvent('spacecraftSideEngineThrustChanged', value);
+    }
+
+    get spacecraftBackEngineThrust() {
+        return this._spacecraftBackEngineThrust;
+    }
+
+    set spacecraftBackEngineThrust(value) {
+        this._spacecraftBackEngineThrust = value;
+        this.dispatchEvent('spacecraftBackEngineThrustChanged', value);
+    }
+
+    get spacecraftRotationalFactor() {
+        return this._spacecraftRotationalFactor;
+    }
+
+    set spacecraftRotationalFactor(value) {
+        this._spacecraftRotationalFactor = value;
+        this.dispatchEvent('spacecraftRotationalFactorChanged', value);
+    }
+}
+
+// Singleton instance of the GameConfig class.
+GameConfig.instance = new GameConfig();
+
+// Export the singleton instance.
+export const gameConfig = GameConfig.instance;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-NameGenerator.html">NameGenerator</a></li></ul><h3>Classes</h3><ul><li><a href="Asteroid.html">Asteroid</a></li><li><a href="FuelManager.html">FuelManager</a></li><li><a href="GameConfig.html">GameConfig</a></li><li><a href="GameConfig_GameConfig.html">GameConfig</a></li><li><a href="Perlin.html">Perlin</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createGoldbergPolyhedron">createGoldbergPolyhedron</a></li><li><a href="global.html#getIntersectedObject">getIntersectedObject</a></li><li><a href="global.html#setSeed">setSeed</a></li><li><a href="global.html#setupInteraction">setupInteraction</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jan 21 2025 08:55:18 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
