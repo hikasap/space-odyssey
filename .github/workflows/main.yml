@@ -70,5 +70,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: documentation
-          path: ./out
+          path: ./docs
     
