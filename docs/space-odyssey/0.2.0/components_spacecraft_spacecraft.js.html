@@ -230,6 +230,21 @@ export class Spacecraft {
         this.batchSystem.update(deltaTime);
 
         this.fuelManager.refuel(0.01 * deltaTime);
+
+        for (let body of this.celestialBodiesInPullRadius) {
+            // Apply gravitational force of unit magnitude towards the celestial body
+            const direction = body.mesh.position.clone().sub(this.model.position);
+            direction.normalize();
+            const proximity = this.model.position.distanceTo(body.mesh.position);
+            // The planet should pull stronger the closer the spacecraft is and also pull more if the planet is heavier
+            const maxPull = 20;
+            const pull = 0.0025 * body.mass / (proximity * proximity * 1.0);
+            console.log('pull', pull);
+            const pullStrength = Math.min(pull, maxPull);
+            console.log('pullStrength', pullStrength);
+            direction.multiplyScalar(pullStrength);
+            this.applyForce(direction);
+        }
     }
 
     refuel(amount) {
@@ -239,7 +254,6 @@ export class Spacecraft {
     getFuelLevel() {
         return this.fuelManager.getFuelLevel();
     }
-
 
     handleEnterPullRadius(celestialBody) {
         if (!this.celestialBodiesInPullRadius.includes(celestialBody)) {
