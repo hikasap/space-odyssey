@@ -4,6 +4,7 @@ import PhysicsInstance from '../../core/physics';
 import { BatchedRenderer, ColorOverLife, ColorRange, ConeEmitter, ConstantColor, ConstantValue, IntervalValue, ParticleSystem} from 'three.quarks';
 import { gameConfig } from '../../systems/configs/gameConfig';
 import { FuelManager } from './fuelManager';
+import { InventoryManager } from '../../systems/inventoryManager';
 
 export class Spacecraft {
     constructor(position, scene, onModelLoaded) {
@@ -29,6 +30,7 @@ export class Spacecraft {
 
         this.celestialBodiesInPullRadius = [];
         this.fuelManager = new FuelManager();
+        this.inventoryManager = new InventoryManager();
     }
 
     init() {
