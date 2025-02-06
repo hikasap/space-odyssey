@@ -55,7 +55,7 @@ export class Spacecraft {
                 if (this.onModelLoaded) {
                     this.onModelLoaded();
                 }
-                PhysicsInstance.addRigidBody(this.model, 1);
+                PhysicsInstance.addRigidBody(this.model);
                 const body = this.model.userData.physicsBody;
                 body.setActivationState(4);
                 
@@ -240,10 +240,9 @@ export class Spacecraft {
             const proximity = this.model.position.distanceTo(body.mesh.position);
             // The planet should pull stronger the closer the spacecraft is and also pull more if the planet is heavier
             const maxPull = 20;
-            const pull = 0.0025 * body.mass / (proximity * proximity * 1.0);
-            console.log('pull', pull);
+            const pull = body.mass / (proximity * proximity * proximity);
             const pullStrength = Math.min(pull, maxPull);
-            console.log('pullStrength', pullStrength);
+            console.log('Pull Strength from planet:', pullStrength , body.celestialDetails['Name']);
             direction.multiplyScalar(pullStrength);
             this.applyForce(direction);
         }
