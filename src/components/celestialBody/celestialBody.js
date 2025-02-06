@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import { getRandomNormal, getRandomNumber } from '../../utils/random';
 import { createGoldbergPolyhedron } from '../../utils/geometry/goldbergPolygedron';
 import { generateRandomName } from '../../utils/nameGenerator';
-import PhysicsInstance from '../../core/physics';
 import { EventManager } from '../../systems/eventManager';
-import { Star } from './star';
 import { gameConfig } from '../../systems/configs/gameConfig';
+import PhysicsInstance from '../../core/physics';
+
 
 export class CelestialBody {
     constructor(size = 1, color = 0xffffff, type = 'sphere', texturePath = 'assets/textures/a_albedo.png') {
@@ -35,6 +35,7 @@ export class CelestialBody {
             this.geometry = new THREE.BoxGeometry(size, size, size);
             this.material = new THREE.MeshStandardMaterial({ color: color, emissive: 0x000000, emissiveIntensity: 0.5 });
         }
+        this.coreMesh = new THREE.Mesh(this.geometry, this.material);
         this.mesh = new THREE.Mesh(this.geometry, this.material);
 
         // Skeleton wireframe
@@ -43,15 +44,12 @@ export class CelestialBody {
         line.material.opacity = 0.05;
         line.material.transparent = true;
         this.mesh.add(line);
-
     }
 
     addPhysics() {
         this.mass = this.size * this.size * this.size * this.density;
         // The radius where the planet starts to pull objects towards it
         this.pullRadius = Math.cbrt(this.mass);
-
-        // I want to 
 
         // // Draw a debug sphere to show the pull radius
         const pullGeometry = new THREE.SphereGeometry(this.pullRadius, 64, 64);
@@ -63,6 +61,19 @@ export class CelestialBody {
         gameConfig.addEventListener('displayPullRadiusChanged', (event) => {
             pullMesh.visible = gameConfig.displayPullRadius;
         });
+
+        const shape = PhysicsInstance.createConvexHullShape(this.geometry);
+        // object3D, shape = this.createBoxShape(object3D), margin = 0.05, mass = 1, linearDamping = 0.7, angularDamping = 0.9
+        this.rigidBody = PhysicsInstance.addRigidBody(
+            this.mesh, shape, 0, 0, 0, 0, true);
+
+        const rigidBody = this.mesh.userData.physicsBody;
+        const transform = rigidBody.getCenterOfMassTransform();
+        transform.setOrigin(new PhysicsInstance.AmmoLib.btVector3(Math.random() * 100, Math.random() * 100, Math.random() * 100));
+        rigidBody.setWorldTransform(transform);
+        rigidBody.getMotionState().getWorldTransform(transform);
+        // Move the rigid body to somewhere else
+    
     }
 
     checkSpacecraftProximity(spacecraft) {
@@ -77,8 +88,9 @@ export class CelestialBody {
     }
 
     rotate(deltaTime) {
-        this.mesh.rotation.y += this.rotationSpeedX * deltaTime;
-        this.mesh.rotation.x += this.rotationSpeedY * deltaTime;
+        // const rigidBody = this.mesh.userData.physicsBody;
+        
+        // PhysicsInstance.rotateKinematicObject(rigidBody, this.rotationSpeedX * deltaTime, this.rotationSpeedY * deltaTime, 0);
     }
 
     initCelesitalDetails() {

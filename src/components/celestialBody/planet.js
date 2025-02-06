@@ -1,7 +1,7 @@
-import { generateRandomName } from '../../utils/nameGenerator.js';
 import { getRandomNumber } from '../../utils/random.js';
 import { CelestialBody } from './celestialBody.js';
 import * as THREE from 'three';
+import PhysicsInstance from '../../core/physics.js';
 
 const atmosphereVertexShader = `
 varying vec3 vNormal;
@@ -86,27 +86,21 @@ export class Planet extends CelestialBody {
         this.orbitalAngle = getRandomNumber() * Math.PI * 2; 
         this.inclination = getRandomNumber() * Math.PI * 2; 
         this.parentStar = parentStar;
-        
         this.has_atmosphere = getRandomNumber() > 0.5;
         this.has_fluid = false;
-
         if (this.has_atmosphere) {
             this.addAtmosphere();
             this.has_fluid = getRandomNumber() > 0.2;
         }
-
         if (this.has_fluid) {
             this.addFluid();
         }            
-
         super.addPhysics();
         this.initCelesitalDetails();
     }
 
     addFluid(){
-        // Assign a random fluid color
         this.fluidColor = new THREE.Color(getRandomNumber(), getRandomNumber(), getRandomNumber());
-
         const fluidGeometry = new THREE.SphereGeometry(this.size * 0.99, 32, 32);
         const fluidMaterial = new THREE.ShaderMaterial({
             vertexShader: fluidVertexShader,
@@ -122,10 +116,8 @@ export class Planet extends CelestialBody {
             side: THREE.FrontSide,
             blending: THREE.AdditiveBlending
         });
-
         const fluidMesh = new THREE.Mesh(fluidGeometry, fluidMaterial);
         this.fluidMesh = fluidMesh;    
-            
         this.mesh.add(this.fluidMesh);
     }
 
@@ -143,7 +135,6 @@ export class Planet extends CelestialBody {
                 atmosphereColor: { value: this.atmosphereColor}
             }
         });
-        
         this.atmosphereMesh = new THREE.Mesh(atmosphereGeo, atmosphereMat);
         this.mesh.add(this.atmosphereMesh);
     }
@@ -160,12 +151,9 @@ export class Planet extends CelestialBody {
         const y = b * Math.sin(this.orbitalAngle);
         const z = y * Math.sin(this.inclination);
 
-        this.mesh.position.set(
-            this.parentStar.mesh.position.x + x,
-            this.parentStar.mesh.position.y + y * Math.cos(this.inclination),
-            this.parentStar.mesh.position.z + z
-        );
-
+        const rigidBody = this.mesh.userData.physicsBody;
+        PhysicsInstance.moveKinematicObject(rigidBody, this.parentStar.mesh.position.x + x, this.parentStar.mesh.position.y + y * Math.cos(this.inclination), this.parentStar.mesh.position.z + z);
+        
         if (this.has_fluid) {
             this.fluidMesh.material.uniforms.time.value += deltaTime;    
         }

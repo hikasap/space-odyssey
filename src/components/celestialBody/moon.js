@@ -1,3 +1,4 @@
+import PhysicsInstance from '../../core/physics.js';
 import { getRandomNumber } from '../../utils/random.js';
 import { CelestialBody } from './celestialBody.js';
 
@@ -27,11 +28,9 @@ export class Moon extends CelestialBody {
         const y = b * Math.sin(this.orbitalAngle);
         const z = y * Math.sin(this.inclination);
 
-        this.mesh.position.set(
-            this.parentPlanet.mesh.position.x + x,
-            this.parentPlanet.mesh.position.y + y * Math.cos(this.inclination),
-            this.parentPlanet.mesh.position.z + z
-        );
+        const rigidBody = this.mesh.userData.physicsBody;
+        PhysicsInstance.moveKinematicObject(rigidBody, this.parentPlanet.mesh.position.x + x, this.parentPlanet.mesh.position.y + y * Math.cos(this.inclination), this.parentPlanet.mesh.position.z + z);
+        
     }
 
     initCelesitalDetails() {

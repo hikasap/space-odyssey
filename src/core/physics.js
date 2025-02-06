@@ -38,9 +38,10 @@ class Physics {
         this.tmpTransformation = new this.AmmoLib.btTransform();
     }
 
-    addRigidBody(object3D, mass = 1, linearDamping = 0.7, angularDamping = 0.9) {
-        const shape = this.createBoxShape(object3D);
-        shape.setMargin(0.05);
+    addRigidBody(object3D, shape = null, margin = 0.05, mass = 1, linearDamping = 0.7, angularDamping = 0.9, isKinematic = false) {
+        
+        if (!shape) shape = this.createBoxShape(object3D);
+        shape.setMargin(margin);
 
         const transform = new this.AmmoLib.btTransform();
         transform.setIdentity();
@@ -76,10 +77,73 @@ class Physics {
         const body = new this.AmmoLib.btRigidBody(rbInfo);
         body.setDamping(linearDamping, angularDamping);
 
+        if (isKinematic){
+            body.setCollisionFlags(body.getCollisionFlags() | 2);
+            body.setActivationState(4);
+        }
+
         this.physicsWorld.addRigidBody(body);
 
         object3D.userData.physicsBody = body;
         this.rigidBodies.push(object3D);
+    }
+
+    moveKinematicObject(rigidBody, x, y, z) {
+        // Retrieve the current transform
+        const transform = new this.AmmoLib.btTransform();
+        rigidBody.getMotionState().getWorldTransform(transform);
+      
+        // Set the new position
+        const newPosition = new this.AmmoLib.btVector3(x, y, z);
+        transform.setOrigin(newPosition);
+      
+        // Apply the updated transform
+        rigidBody.setWorldTransform(transform);
+        rigidBody.getMotionState().setWorldTransform(transform);
+    }
+
+    rotateKinematicObject(rigidBody, x, y, z) {
+        if (!rigidBody) return;
+    
+        // Retrieve the current transform
+        rigidBody.getMotionState().getWorldTransform(this.tmpTransformation);
+        const origin = this.tmpTransformation.getOrigin();
+        const rotation = this.tmpTransformation.getRotation();
+    
+        // Convert Ammo quaternion to Three.js quaternion
+        const threeQuat = new THREE.Quaternion(rotation.x(), rotation.y(), rotation.z(), rotation.w());
+        // Convert quaternion to Euler for easy manipulation
+        const euler = new THREE.Euler().setFromQuaternion(threeQuat, 'XYZ');
+    
+        // Add rotation increments
+        euler.x += x;
+        euler.y += y;
+        euler.z += z;
+    
+        // Convert back to quaternion
+        threeQuat.setFromEuler(euler);
+    
+        // Update the transformation
+        this.tmpTransformation.setOrigin(origin);
+        this.tmpTransformation.setRotation(
+            new this.AmmoLib.btQuaternion(threeQuat.x, threeQuat.y, threeQuat.z, threeQuat.w)
+        );
+    
+        // Apply the updated transform
+        rigidBody.setWorldTransform(this.tmpTransformation);
+        rigidBody.getMotionState().setWorldTransform(this.tmpTransformation);
+    }
+
+    createConvexHullShape(geometry) {
+        const shape = new this.AmmoLib.btConvexHullShape();
+        const vertices = geometry.attributes.position.array;
+        for (let i = 0; i < vertices.length; i += 3) {
+            const vertex = new this.AmmoLib.btVector3(vertices[i], vertices[i + 1], vertices[i + 2]);
+            shape.addPoint(vertex, true);
+            this.AmmoLib.destroy(vertex);
+        }
+        shape.recalcLocalAabb();
+        return shape;
     }
 
     createBoxShape(object3D) {
